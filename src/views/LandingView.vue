@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import router from '@/router'
-import { RouterLink } from 'vue-router'
 
 const data = localStorage.getItem('user_data')
 if (data) {
@@ -14,9 +13,7 @@ if (data) {
     <header>
       <img src="@/assets/logo.png" alt="logo" />
       <h1>Simplificando la casa de tus sueños</h1>
-      <RouterLink to="about">
-        <v-btn size="x-large" class="bg-surface">EMPEZAR AHORA</v-btn>
-      </RouterLink>
+      <v-btn to="dashboard" size="x-large" class="bg-surface">EMPEZAR AHORA</v-btn>
     </header>
 
     <v-expansion-panels variant="accordion">
@@ -70,6 +67,30 @@ header {
 
   margin: 0 auto;
   padding: 1rem;
+}
+
+@media screen and (max-width: 768px) {
+  main {
+    width: 90%;
+    padding: 5px;
+  }
+
+  header {
+    width: 90%;
+    padding: 0;
+  }
+}
+
+@media screen and (max-width: 425px) {
+  main {
+    width: 100%;
+    padding: 5px;
+  }
+
+  header {
+    width: 100%;
+    padding: 0;
+  }
 }
 
 img {
