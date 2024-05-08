@@ -46,75 +46,119 @@ const initial_home: Ref<string | null> = ref(null)
  */
 const initial_room: Ref<string | null> = ref(null)
 
-watch([() => route.params.home, () => route.params.room], async () => {
-  const { home, room } = (route.params as Record<'home' | 'room', string>) ?? {}
+watch(
+  [() => route.params.home, () => route.params.room],
+  async () => {
+    if (route.name !== 'dashboard') return
 
-  // https://router.vuejs.org/guide/advanced/data-fetching
+    const { home, room } = (route.params as Record<'home' | 'room', string>) ?? {}
 
-  loading.value = true
+    // https://router.vuejs.org/guide/advanced/data-fetching
 
-  // Imagine this is are API data
-  const homes_data: Home[] = [
-    {
-      name: 'Casa Diego',
-      code: 'abc123'
-    },
-    {
-      name: 'Casa Maggie',
-      code: 'def456'
-    },
-    {
-      name: 'Casa Tomi',
-      code: 'ghi789'
+    loading.value = true
+
+    // Imagine this is are API data
+    const homes_data: Home[] = [
+      {
+        name: 'Casa Diego',
+        code: 'abc123'
+      },
+      {
+        name: 'Casa Maggie',
+        code: 'def456'
+      },
+      {
+        name: 'Casa Tomi',
+        code: 'ghi789'
+      }
+    ]
+
+    const rooms_data: Record<Home['code'], Room[]> = {
+      abc123: [
+        {
+          name: 'Playroom',
+          code: 'abc123-1'
+        },
+        {
+          name: 'Living',
+          code: 'abc123-2'
+        },
+        {
+          name: 'Cocina',
+          code: 'abc123-3'
+        }
+      ],
+      def456: [
+        {
+          name: 'Cuarto Principal',
+          code: 'def456-1'
+        },
+        {
+          name: 'Cuarto de Invitados',
+          code: 'def456-2'
+        }
+      ]
     }
-  ]
 
-  const rooms_data: Record<Home['code'], Room[]> = {
-    abc123: [
-      {
-        name: 'Playroom',
-        code: 'abc123-1'
-      },
-      {
-        name: 'Living',
-        code: 'abc123-2'
-      },
-      {
-        name: 'Cocina',
-        code: 'abc123-3'
-      }
-    ],
-    def456: [
-      {
-        name: 'Cuarto Principal',
-        code: 'def456-1'
-      },
-      {
-        name: 'Cuarto de Invitados',
-        code: 'def456-2'
-      }
-    ],
-    ghi789: []
-  }
+    loading.value = false
 
-  data.value = { homes: homes_data, rooms: [] }
+    // If home or room are not within the available options, redirect to NotFound
+    if (
+      (home && !homes_data.some((e) => e.code === home)) ||
+      (room && !rooms_data[home]?.some((e) => e.code === room))
+    ) {
+      await router.push({
+        name: 'NotFound',
+        // preserve current path and remove the first char to avoid the target URL starting with `//`
+        params: { pathMatch: route.path.substring(1).split('/') },
+        // preserve existing query and hash if any
+        query: route.query,
+        hash: route.hash
+      })
 
-  loading.value = false
+      return
+    }
 
-  // If home or room are not within the available options, redirect to NotFound
-  if (
-    (home && !homes_data.find((e) => e.code === home)) ||
-    (room && !rooms_data[home]?.find((e) => e.code === room))
-  ) {
-    await router.push({ name: 'NotFound' })
-    return
-  }
+    // If there are no homes available, redirect to NotFound (TODO: Add first house flow)
+    if (!homes_data.length) {
+      await router.push({ name: 'NotFound' })
 
-  data.value.rooms = rooms_data[home] ?? []
+      return
+    }
 
-  initial_home.value = home || data.value.homes[0]?.code
-  initial_room.value = room || data.value.rooms[0]?.code
-})
+    // Redirect to the first available home and room if none is provided
+    if (!home) {
+      router.push({
+        name: 'dashboard',
+        params: {
+          home: home || homes_data[0]?.code,
+          room: rooms_data[home]?.[0]?.code
+        }
+      })
+
+      return
+    }
+
+    // Redirect to the first available room if possible (maybe the house has no rooms)
+    if (!room && rooms_data[home]?.length) {
+      router.push({
+        name: 'dashboard',
+        params: {
+          home,
+          room: rooms_data[home][0].code
+        }
+      })
+
+      return
+    }
+
+    data.value = { homes: homes_data, rooms: rooms_data[home] ?? [] }
+
+    initial_home.value = home
+    initial_room.value = room
+  },
+  { immediate: true }
+)
 
 function changeHome(home: string | null) {
   router.push({ name: 'dashboard', params: { home } })
