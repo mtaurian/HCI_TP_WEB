@@ -107,7 +107,7 @@ watch(
       (home && !homes_data.some((e) => e.code === home)) ||
       (room && !rooms_data[home]?.some((e) => e.code === room))
     ) {
-      await router.push({
+      await router.replace({
         name: 'NotFound',
         // preserve current path and remove the first char to avoid the target URL starting with `//`
         params: { pathMatch: route.path.substring(1).split('/') },
@@ -121,14 +121,21 @@ watch(
 
     // If there are no homes available, redirect to NotFound (TODO: Add first house flow)
     if (!homes_data.length) {
-      await router.push({ name: 'NotFound' })
+      await router.replace({
+        name: 'NotFound',
+        // preserve current path and remove the first char to avoid the target URL starting with `//`
+        params: { pathMatch: route.path.substring(1).split('/') },
+        // preserve existing query and hash if any
+        query: route.query,
+        hash: route.hash
+      })
 
       return
     }
 
     // Redirect to the first available home and room if none is provided
     if (!home) {
-      router.push({
+      router.replace({
         name: 'dashboard',
         params: {
           home: home || homes_data[0]?.code,
@@ -141,7 +148,7 @@ watch(
 
     // Redirect to the first available room if possible (maybe the house has no rooms)
     if (!room && rooms_data[home]?.length) {
-      router.push({
+      router.replace({
         name: 'dashboard',
         params: {
           home,
@@ -160,11 +167,11 @@ watch(
   { immediate: true }
 )
 
-function changeHome(home: string | null) {
+function changeHome(home: string) {
   router.push({ name: 'dashboard', params: { home } })
 }
 
-function changeRoom(room: string | null) {
+function changeRoom(room: string) {
   router.push({ name: 'dashboard', params: { home: route.params.home, room } })
 }
 </script>
@@ -182,13 +189,14 @@ function changeRoom(room: string | null) {
             item-title="name"
             item-value="code"
             :loading
+            :disabled="loading"
             @update:modelValue="changeHome"
             variant="solo-filled"
             density="compact"
           >
             <template #no-data></template>
             <template #append-item>
-              <v-list-item prepend-icon="mdi-plus" link>
+              <v-list-item prepend-icon="mdi-plus" link variant="tonal">
                 <v-list-item-title>Crear Casa</v-list-item-title>
               </v-list-item>
             </template>
@@ -200,6 +208,7 @@ function changeRoom(room: string | null) {
             item-title="name"
             item-value="code"
             :loading
+            :disabled="loading"
             @update:modelValue="changeRoom"
             variant="solo-filled"
             density="compact"
@@ -210,7 +219,7 @@ function changeRoom(room: string | null) {
               </v-list-item>
             </template>
             <template #append-item v-if="route.params.home">
-              <v-list-item prepend-icon="mdi-plus" link>
+              <v-list-item prepend-icon="mdi-plus" link variant="tonal">
                 <v-list-item-title>Crear Cuarto</v-list-item-title>
               </v-list-item>
             </template>
