@@ -17,7 +17,13 @@ const vuetify = createVuetify({
         colors: {
           primary: '#D2A6FE',
           secondary: '#4A4458',
+          /**
+           * Changes the whole website background
+           */
           background: '#331851',
+          /**
+           * Changes the background color of things such as select elements and its childs
+           */
           surface: '#9E72C3',
           accent: '#EEEEEE',
           error: '#FF5252',
