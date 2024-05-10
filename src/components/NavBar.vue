@@ -231,7 +231,7 @@ function changeRoom(room: string) {
   </v-app-bar>
 </template>
 
-<style>
+<style scoped>
 .flex {
   display: flex;
   align-items: center;
