@@ -1,25 +1,37 @@
 <script setup lang="ts">
-import { defineProps, ref } from 'vue'
-import DeviceCard from './DeviceCard.vue';
+import type { Ref } from 'vue'
+import DeviceCard from './DeviceCard.vue'
 import type { Device } from '@/api'
 
 export type ListDevice = {
-  device: Device,
-  home_code: string,
-  room_code: string,
-  state: string,
+  device: Device
+  // Idk if this property will be within API's Device interface
+  // Meanwhile, I can leave it here
+  device_type:
+    | 'lampara'
+    | 'aire'
+    | 'aspiradora'
+    | 'heladera'
+    | 'parlante'
+    | 'grifo'
+    | 'aspersor'
+    | 'persiana'
+    | 'cortina'
+    | 'toldo'
+    | 'horno'
+    | 'puerta'
+    | 'alarma'
+  home_code: string
+  room_code: string
+  state: string
   stateIcon: string
 }
 
-const props = defineProps<{
+defineProps<{
   devices: ListDevice[]
 }>()
 
-const selected = ref('')
-const toggleDeviceActive = (key: string): void => {
-  selected.value = key
-}
-
+const selected = defineModel() as Ref<string>
 </script>
 
 <template>
@@ -32,14 +44,12 @@ const toggleDeviceActive = (key: string): void => {
       :stateIcon="item.stateIcon"
       :isActive="item.device.id === selected"
       :id="item.device.id"
-      @click="toggleDeviceActive"
+      @click="selected = item.device.id"
     />
   </div>
-
 </template>
 
 <style scoped>
-
 .device-list-container {
   width: 80%;
   margin: 0 auto;
@@ -48,5 +58,4 @@ const toggleDeviceActive = (key: string): void => {
   gap: 20px;
   border-radius: 10px;
 }
-
 </style>
