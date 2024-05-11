@@ -1,5 +1,24 @@
 <script setup lang="ts">
+/**
+ * This file needs a little clarification in respect to its scope:
+ *
+ * The component receives the device's data (name, id, type, room),
+ * and renders the corresponding controller for the device, plus two
+ * buttons: change room and delete device.
+ *
+ * Any interaction with this buttons is handled by the parent component.
+ * Meanwhile, any interaction with the controller is handled by the
+ * controller itself (the child).
+ *
+ * I think this manages to get the best of both worlds: the parent
+ * handles generic actions, while the child handles specific actions.
+ */
+
+import BlindController from '@/components/devices/BlindController.vue'
+
 defineProps<{
+  device_name: string
+  device_id: string
   device_type:
     | 'lampara'
     | 'aire'
@@ -14,6 +33,11 @@ defineProps<{
     | 'horno'
     | 'puerta'
     | 'alarma'
+  room_id: string
+  house_rooms: {
+    id: string
+    name: string
+  }[]
 }>()
 
 defineEmits<{
@@ -32,7 +56,10 @@ defineEmits<{
 
 <template>
   <div class="black-square">
-    <div>
+    <div class="name">
+      <h2>{{ device_name }}</h2>
+    </div>
+    <div class="controller">
       <!-- Component picking here -->
       <p v-if="device_type === 'aire'">Aire</p>
       <p v-else-if="device_type === 'lampara'">Lámpara</p>
@@ -41,7 +68,7 @@ defineEmits<{
       <p v-else-if="device_type === 'parlante'">Parlante</p>
       <p v-else-if="device_type === 'grifo'">Grifo</p>
       <p v-else-if="device_type === 'aspersor'">Aspersor</p>
-      <p v-else-if="device_type === 'persiana'">Persiana</p>
+      <BlindController v-else-if="device_type === 'persiana'" device_id="fake_id" />
       <p v-else-if="device_type === 'cortina'">Cortina</p>
       <p v-else-if="device_type === 'toldo'">Toldo</p>
       <p v-else-if="device_type === 'horno'">Horno</p>
@@ -54,7 +81,9 @@ defineEmits<{
       <div class="select">
         <v-select
           label="Cambiar habitación"
-          :items="['Living', 'Cocina', 'idk']"
+          :items="house_rooms.filter((room) => room.id !== room_id)"
+          item-text="name"
+          item-value="id"
           @update:model-value="$emit('change_room', $event!)"
           variant="underlined"
         ></v-select>
@@ -75,11 +104,18 @@ defineEmits<{
 .black-square {
   width: 100%;
   height: 100%;
+  padding: 2.2rem 3rem;
+
   background-color: #4a4458;
 
   display: grid;
   align-items: center;
-  grid-template-rows: 1fr 20%;
+  grid-template-rows: 10% 1fr 20%;
+}
+
+.controller,
+.actions {
+  margin: 0 1rem;
 }
 
 .actions {
@@ -87,8 +123,6 @@ defineEmits<{
   grid-template-columns: repeat(5, 1fr);
   align-items: center;
   justify-items: center;
-
-  margin: 0 2rem;
 }
 
 .select {
