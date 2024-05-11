@@ -13,49 +13,48 @@ function deleteDevice() {
 //asume this is API data
 const devices: ListDevice[] = [
   {
-    device : {id: '1', name: 'Luz de la sala', actions : [], events : [], powerUsage : 0},
+    device: { id: '1', name: 'Luz de la sala', actions: [], events: [], powerUsage: 0 },
     state: '1Estado',
     stateIcon: '../assets/ex.png',
-    home_code: "abc123",
-    room_code: "abc123-1"
+    home_code: 'abc123',
+    room_code: 'abc123-1'
   },
   {
-    device : {id: '2', name: 'Lampara Techo', actions : [], events : [], powerUsage : 0},
+    device: { id: '2', name: 'Lampara Techo', actions: [], events: [], powerUsage: 0 },
     state: '1Estado',
     stateIcon: '../assets/ex.png',
-    home_code: "abc123",
-    room_code: "abc123-1"
+    home_code: 'abc123',
+    room_code: 'abc123-1'
   },
   {
-    device : {id: '3', name: 'TV', actions : [], events : [], powerUsage : 0},
+    device: { id: '3', name: 'TV', actions: [], events: [], powerUsage: 0 },
     state: '1Estado',
     stateIcon: '../assets/ex.png',
-    home_code: "abc123",
-    room_code: "abc123-1"
+    home_code: 'abc123',
+    room_code: 'abc123-1'
   },
   {
-    device : {id: '4', name: 'Parlante', actions : [], events : [], powerUsage : 0},
+    device: { id: '4', name: 'Parlante', actions: [], events: [], powerUsage: 0 },
     state: '1Estado',
     stateIcon: '../assets/ex.png',
-    home_code: "abc123",
-    room_code: "abc123-1"
+    home_code: 'abc123',
+    room_code: 'abc123-1'
   },
   {
-    device : {id: '5', name: 'Cortina', actions : [], events : [], powerUsage : 0},
+    device: { id: '5', name: 'Cortina', actions: [], events: [], powerUsage: 0 },
     state: '1Estado',
     stateIcon: '../assets/ex.png',
-    home_code: "abc123",
-    room_code: "abc123-1"
+    home_code: 'abc123',
+    room_code: 'abc123-1'
   }
-];
-
+]
 </script>
 
 <template>
   <main>
     <!-- <h1>House code: {{ $route.params.home }}<br />Room code: {{ $route.params.room }}</h1> -->
     <div class="list">
-      <DevicesList :devices="devices"/>
+      <DevicesList :devices="devices" />
     </div>
     <div class="separator"></div>
     <div class="controller">
@@ -104,5 +103,4 @@ main {
   justify-content: center;
   align-items: center;
 }
-
 </style>
