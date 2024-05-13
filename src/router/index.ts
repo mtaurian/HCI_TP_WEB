@@ -11,8 +11,18 @@ const router = createRouter({
       component: LandingView
     },
     {
-      path: '/dashboard/:home?/:room?',
+      path: '/dashboard',
+      name: 'load-dashboard',
+      component: HomeView
+    },
+    {
+      path: '/dashboard/:home?/room/:room?',
       name: 'dashboard',
+      component: HomeView
+    },
+    {
+      path: '/dashboard/:home?/routines',
+      name: 'routines',
       component: HomeView
     },
     {

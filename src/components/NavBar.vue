@@ -49,7 +49,7 @@ const initial_room: Ref<string | null> = ref(null)
 watch(
   [() => route.params.home, () => route.params.room],
   async () => {
-    if (route.name !== 'dashboard') return
+    if (route.name !== 'load-dashboard' && route.name !== 'dashboard') return
 
     const { home, room } = (route.params as Record<'home' | 'room', string>) ?? {}
 
