@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import ControllerPlaceholder from '@/components/ControllerPlaceholder.vue'
 import DevicesList from '@/components/DevicesList.vue'
-// import { useDeviceStore } from '@/stores'
 
 function changeRoom(room: string) {
   alert(`Room changed to ${room}`)
