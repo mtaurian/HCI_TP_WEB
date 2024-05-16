@@ -16,9 +16,7 @@ function deleteDevice() {
   <main>
     <!-- <h1>House code: {{ $route.params.home }}<br />Room code: {{ $route.params.room }}</h1> -->
     <div class="list">
-      <Suspense>
-        <DevicesList />
-      </Suspense>
+      <DevicesList />
     </div>
     <div class="separator"></div>
     <div class="controller">

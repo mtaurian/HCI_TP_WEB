@@ -1,12 +1,19 @@
 <script setup lang="ts">
+import { watch } from 'vue'
 import DeviceCard from './DeviceCard.vue'
 import { useRoomStore, useDeviceStore } from '@/stores'
 
-const { room_devices } = useRoomStore()
+const roomStore = useRoomStore()
+const deviceStore = useDeviceStore()
 
-const { device, setCurrentDevice } = useDeviceStore()
-
-const devices = await room_devices
+watch(
+  () => roomStore.room,
+  () => {
+    if (!deviceStore.device) {
+      deviceStore.setCurrentDevice(roomStore.devices[0].code)
+    }
+  }
+)
 </script>
 
 <template>
@@ -14,14 +21,14 @@ const devices = await room_devices
     <!-- The missing properties might be stored in the meta -->
     <!-- As soon as we find out how the API works... -->
     <DeviceCard
-      v-for="item in devices"
+      v-for="item in roomStore.devices"
       :key="item.code"
       :deviceName="item.name"
       state="item.state"
       stateIcon="item.stateIcon"
-      :isActive="item.code === device?.code"
+      :isActive="item.code === deviceStore.device?.code"
       :id="item.code"
-      @click="setCurrentDevice(item.code)"
+      @click="deviceStore.setCurrentDevice(item.code)"
     />
   </div>
 </template>

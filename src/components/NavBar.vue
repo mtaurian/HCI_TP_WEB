@@ -18,13 +18,14 @@
 
 import { computed, ref, watch, type Ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useApiDataStore, useHouseStore, useRoomStore } from '@/stores'
+import { useAllHousesStore, useHomeStore, useRoomStore } from '@/stores'
 
 const router = useRouter()
 const route = useRoute()
-const { data, loading: loading_api, error: error_api, updateData } = useApiDataStore()
-const { home_rooms, loading: loading_home, error: error_home, setCurrentHome } = useHouseStore()
-const { loading: loading_room, error: error_room, setCurrentRoom } = useRoomStore()
+
+const housesStore = useAllHousesStore()
+const homeStore = useHomeStore()
+const roomStore = useRoomStore()
 
 // This must be only used in the select to set the initial values
 // If you want to get the current value, use route.params.home and route.params.room respectively
@@ -37,22 +38,22 @@ const initial_home: Ref<string | null> = ref(null)
  */
 const initial_room: Ref<string | null> = ref(null)
 
-const loading = computed(() => loading_api || loading_home || loading_room)
+const loading = computed(() => housesStore.loading || homeStore.loading || roomStore.loading)
 
 watch(
   [() => route.params.home, () => route.params.room],
   async () => {
-    console.log('Route changed', JSON.stringify(route))
     if (!['load-dashboard', 'dashboard'].includes(route.name as string)) return
 
     const { home, room } = (route.params ?? {}) as Record<'home' | 'room', string | undefined>
 
     // https://router.vuejs.org/guide/advanced/data-fetching
-    const data = await updateData()
+    await housesStore.setHouses()
 
-    if (error_api) {
-      console.error('Error fetching data', error_api)
+    if (housesStore.error) {
+      console.error('Error fetching data', housesStore.error)
 
+      // TODO: 500 page
       await router.replace({
         name: 'NotFound',
         // preserve current path and remove the first char to avoid the target URL starting with `//`
@@ -66,8 +67,8 @@ watch(
     }
 
     // If there are no homes available, redirect to NotFound (TODO: Add first house flow)
-    if (!data?.homes.length) {
-      console.log(data)
+    if (!housesStore.homes?.length) {
+      console.error('No homes available')
 
       await router.replace({
         name: 'NotFound',
@@ -83,20 +84,20 @@ watch(
 
     // Redirect to the first available home if none is provided
     if (!home) {
-      router.replace({
+      await router.replace({
         name: 'dashboard',
         params: {
-          home: data.homes[0]?.code
+          home: housesStore.homes[0]?.code
         }
       })
 
       return
     }
 
-    await setCurrentHome(home)
+    await homeStore.setCurrentHome(home)
 
-    if (error_home) {
-      console.error('Error fetching home data', error_home)
+    if (homeStore.error) {
+      console.error('Error fetching home data', homeStore.error)
 
       await router.replace({
         name: 'NotFound',
@@ -111,12 +112,12 @@ watch(
     }
 
     // Redirect to the first available room if possible (maybe the house has no rooms)
-    if (!room && (await home_rooms)?.length) {
-      router.replace({
+    if (!room && homeStore.rooms?.length) {
+      await router.replace({
         name: 'dashboard',
         params: {
           home,
-          room: (await home_rooms)[0].code
+          room: homeStore.rooms[0].code
         }
       })
 
@@ -124,10 +125,10 @@ watch(
     }
 
     if (room) {
-      await setCurrentRoom(room)
+      await roomStore.setCurrentRoom(room)
 
-      if (error_room) {
-        console.error('Error fetching room data', error_room)
+      if (roomStore.error) {
+        console.error('Error fetching room data', roomStore.error)
 
         await router.replace({
           name: 'NotFound',
@@ -166,7 +167,7 @@ function changeRoom(room: string) {
           <v-select
             label="Casa"
             v-model="initial_home"
-            :items="data?.homes"
+            :items="housesStore.homes"
             item-title="name"
             item-value="code"
             :loading
@@ -185,7 +186,7 @@ function changeRoom(room: string) {
           <v-select
             label="Cuarto"
             v-model="initial_room"
-            :items="data?.rooms"
+            :items="homeStore.rooms"
             item-title="name"
             item-value="code"
             :loading

@@ -15,14 +15,11 @@
  */
 
 import BlindController from '@/components/devices/BlindController.vue'
-import { useHouseStore, useRoomStore, useDeviceStore } from '@/stores'
-import { onMounted, ref, type Ref } from 'vue'
+import { useHomeStore, useRoomStore, useDeviceStore } from '@/stores'
 
-const { home_rooms } = useHouseStore()
-
-const { room } = useRoomStore()
-
-const { device } = useDeviceStore()
+const homeStore = useHomeStore()
+const roomStore = useRoomStore()
+const deviceStore = useDeviceStore()
 
 defineEmits<{
   /**
@@ -36,33 +33,31 @@ defineEmits<{
    */
   delete: []
 }>()
-
-const rooms: Ref<Awaited<typeof home_rooms>> = ref([])
-onMounted(async () => {
-  rooms.value = await home_rooms
-})
 </script>
 
 <template>
-  <div class="black-square">
+  <div v-if="deviceStore.device" class="black-square">
     <div class="name">
-      <h2>{{ device?.name }}</h2>
+      <h2>{{ deviceStore.device.name }}</h2>
     </div>
     <div class="controller">
       <!-- Component picking here -->
-      <p v-if="device?.type === 'aire'">Aire</p>
-      <p v-else-if="device?.type === 'lampara'">Lámpara</p>
-      <p v-else-if="device?.type === 'aspiradora'">Aspiradora</p>
-      <p v-else-if="device?.type === 'heladera'">Heladera</p>
-      <p v-else-if="device?.type === 'parlante'">Parlante</p>
-      <p v-else-if="device?.type === 'grifo'">Grifo</p>
-      <p v-else-if="device?.type === 'aspersor'">Aspersor</p>
-      <BlindController v-else-if="device?.type === 'persiana'" device_id="fake_id" />
-      <p v-else-if="device?.type === 'cortina'">Cortina</p>
-      <p v-else-if="device?.type === 'toldo'">Toldo</p>
-      <p v-else-if="device?.type === 'horno'">Horno</p>
-      <p v-else-if="device?.type === 'puerta'">Puerta</p>
-      <p v-else-if="device?.type === 'alarma'">Alarma</p>
+      <p v-if="deviceStore.device.type === 'aire'">Aire</p>
+      <p v-else-if="deviceStore.device.type === 'lampara'">Lámpara</p>
+      <p v-else-if="deviceStore.device.type === 'aspiradora'">Aspiradora</p>
+      <p v-else-if="deviceStore.device.type === 'heladera'">Heladera</p>
+      <p v-else-if="deviceStore.device.type === 'parlante'">Parlante</p>
+      <p v-else-if="deviceStore.device.type === 'grifo'">Grifo</p>
+      <p v-else-if="deviceStore.device.type === 'aspersor'">Aspersor</p>
+      <BlindController
+        v-else-if="deviceStore.device.type === 'persiana'"
+        :device_id="deviceStore.device.code"
+      />
+      <p v-else-if="deviceStore.device.type === 'cortina'">Cortina</p>
+      <p v-else-if="deviceStore.device.type === 'toldo'">Toldo</p>
+      <p v-else-if="deviceStore.device.type === 'horno'">Horno</p>
+      <p v-else-if="deviceStore.device.type === 'puerta'">Puerta</p>
+      <p v-else-if="deviceStore.device.type === 'alarma'">Alarma</p>
       <p v-else>¡Dispositivo desconocido!</p>
     </div>
 
@@ -70,9 +65,9 @@ onMounted(async () => {
       <div class="select">
         <v-select
           label="Cambiar habitación"
-          :items="rooms.filter((r) => r.code !== room?.code)"
-          item-text="name"
-          item-value="id"
+          :items="homeStore.rooms.filter((r) => r.code !== roomStore.room?.code)"
+          item-title="name"
+          item-value="code"
           @update:model-value="$emit('change_room', $event!)"
           variant="underlined"
         ></v-select>
@@ -86,6 +81,12 @@ onMounted(async () => {
         </v-btn>
       </div>
     </div>
+  </div>
+  <div v-else>
+    <p>
+      ¡No hay dispositivo seleccionado! Tal vez una foto acá para decirle cómo agregar un
+      dispositivo
+    </p>
   </div>
 </template>
 
