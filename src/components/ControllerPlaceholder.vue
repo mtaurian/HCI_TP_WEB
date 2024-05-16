@@ -15,30 +15,14 @@
  */
 
 import BlindController from '@/components/devices/BlindController.vue'
+import { useHouseStore, useRoomStore, useDeviceStore } from '@/stores'
+import { onMounted, ref, type Ref } from 'vue'
 
-defineProps<{
-  device_name: string
-  device_id: string
-  device_type:
-    | 'lampara'
-    | 'aire'
-    | 'aspiradora'
-    | 'heladera'
-    | 'parlante'
-    | 'grifo'
-    | 'aspersor'
-    | 'persiana'
-    | 'cortina'
-    | 'toldo'
-    | 'horno'
-    | 'puerta'
-    | 'alarma'
-  room_id: string
-  house_rooms: {
-    id: string
-    name: string
-  }[]
-}>()
+const { home_rooms } = useHouseStore()
+
+const { room } = useRoomStore()
+
+const { device } = useDeviceStore()
 
 defineEmits<{
   /**
@@ -52,28 +36,33 @@ defineEmits<{
    */
   delete: []
 }>()
+
+const rooms: Ref<Awaited<typeof home_rooms>> = ref([])
+onMounted(async () => {
+  rooms.value = await home_rooms
+})
 </script>
 
 <template>
   <div class="black-square">
     <div class="name">
-      <h2>{{ device_name }}</h2>
+      <h2>{{ device?.name }}</h2>
     </div>
     <div class="controller">
       <!-- Component picking here -->
-      <p v-if="device_type === 'aire'">Aire</p>
-      <p v-else-if="device_type === 'lampara'">Lámpara</p>
-      <p v-else-if="device_type === 'aspiradora'">Aspiradora</p>
-      <p v-else-if="device_type === 'heladera'">Heladera</p>
-      <p v-else-if="device_type === 'parlante'">Parlante</p>
-      <p v-else-if="device_type === 'grifo'">Grifo</p>
-      <p v-else-if="device_type === 'aspersor'">Aspersor</p>
-      <BlindController v-else-if="device_type === 'persiana'" device_id="fake_id" />
-      <p v-else-if="device_type === 'cortina'">Cortina</p>
-      <p v-else-if="device_type === 'toldo'">Toldo</p>
-      <p v-else-if="device_type === 'horno'">Horno</p>
-      <p v-else-if="device_type === 'puerta'">Puerta</p>
-      <p v-else-if="device_type === 'alarma'">Alarma</p>
+      <p v-if="device?.type === 'aire'">Aire</p>
+      <p v-else-if="device?.type === 'lampara'">Lámpara</p>
+      <p v-else-if="device?.type === 'aspiradora'">Aspiradora</p>
+      <p v-else-if="device?.type === 'heladera'">Heladera</p>
+      <p v-else-if="device?.type === 'parlante'">Parlante</p>
+      <p v-else-if="device?.type === 'grifo'">Grifo</p>
+      <p v-else-if="device?.type === 'aspersor'">Aspersor</p>
+      <BlindController v-else-if="device?.type === 'persiana'" device_id="fake_id" />
+      <p v-else-if="device?.type === 'cortina'">Cortina</p>
+      <p v-else-if="device?.type === 'toldo'">Toldo</p>
+      <p v-else-if="device?.type === 'horno'">Horno</p>
+      <p v-else-if="device?.type === 'puerta'">Puerta</p>
+      <p v-else-if="device?.type === 'alarma'">Alarma</p>
       <p v-else>¡Dispositivo desconocido!</p>
     </div>
 
@@ -81,7 +70,7 @@ defineEmits<{
       <div class="select">
         <v-select
           label="Cambiar habitación"
-          :items="house_rooms.filter((room) => room.id !== room_id)"
+          :items="rooms.filter((r) => r.code !== room?.code)"
           item-text="name"
           item-value="id"
           @update:model-value="$emit('change_room', $event!)"

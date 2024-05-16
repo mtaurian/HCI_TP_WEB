@@ -1,50 +1,27 @@
 <script setup lang="ts">
-import type { Ref } from 'vue'
 import DeviceCard from './DeviceCard.vue'
-import type { Device } from '@/api'
+import { useRoomStore, useDeviceStore } from '@/stores'
 
-export type ListDevice = {
-  device: Device
-  // Idk if this property will be within API's Device interface
-  // Meanwhile, I can leave it here
-  device_type:
-    | 'lampara'
-    | 'aire'
-    | 'aspiradora'
-    | 'heladera'
-    | 'parlante'
-    | 'grifo'
-    | 'aspersor'
-    | 'persiana'
-    | 'cortina'
-    | 'toldo'
-    | 'horno'
-    | 'puerta'
-    | 'alarma'
-  home_code: string
-  room_code: string
-  state: string
-  stateIcon: string
-}
+const { room_devices } = useRoomStore()
 
-defineProps<{
-  devices: ListDevice[]
-}>()
+const { device, setCurrentDevice } = useDeviceStore()
 
-const selected = defineModel() as Ref<string>
+const devices = await room_devices
 </script>
 
 <template>
   <div class="device-list-container">
+    <!-- The missing properties might be stored in the meta -->
+    <!-- As soon as we find out how the API works... -->
     <DeviceCard
       v-for="item in devices"
-      :key="item.device.id"
-      :deviceName="item.device.name"
-      :state="item.state"
-      :stateIcon="item.stateIcon"
-      :isActive="item.device.id === selected"
-      :id="item.device.id"
-      @click="selected = item.device.id"
+      :key="item.code"
+      :deviceName="item.name"
+      state="item.state"
+      stateIcon="item.stateIcon"
+      :isActive="item.code === device?.code"
+      :id="item.code"
+      @click="setCurrentDevice(item.code)"
     />
   </div>
 </template>

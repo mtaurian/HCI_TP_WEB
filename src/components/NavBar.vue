@@ -16,24 +16,15 @@
  * - Built on (_vibes_)[https://github.com/sveltejs/svelte/discussions/10085]
  */
 
-import { ref, watch, type Ref } from 'vue'
+import { computed, ref, watch, type Ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useApiDataStore, useHouseStore, useRoomStore } from '@/stores'
 
 const router = useRouter()
 const route = useRoute()
-
-// Imagine this is are API types
-type Home = { name: string; code: string }
-type Room = { name: string; code: string }
-
-/**
- * This is a reactive variable to indicate if the data is being loaded
- */
-const loading = ref(false)
-/**
- * This is a reactive variable to store the response from the API
- */
-const data: Ref<{ homes: Home[]; rooms: Room[] } | null> = ref(null)
+const { data, loading: loading_api, error: error_api, updateData } = useApiDataStore()
+const { home_rooms, loading: loading_home, error: error_home, setCurrentHome } = useHouseStore()
+const { loading: loading_room, error: error_room, setCurrentRoom } = useRoomStore()
 
 // This must be only used in the select to set the initial values
 // If you want to get the current value, use route.params.home and route.params.room respectively
@@ -46,67 +37,22 @@ const initial_home: Ref<string | null> = ref(null)
  */
 const initial_room: Ref<string | null> = ref(null)
 
+const loading = computed(() => loading_api || loading_home || loading_room)
+
 watch(
   [() => route.params.home, () => route.params.room],
   async () => {
-    if (route.name !== 'load-dashboard' && route.name !== 'dashboard') return
+    console.log('Route changed', JSON.stringify(route))
+    if (!['load-dashboard', 'dashboard'].includes(route.name as string)) return
 
-    const { home, room } = (route.params as Record<'home' | 'room', string>) ?? {}
+    const { home, room } = (route.params ?? {}) as Record<'home' | 'room', string | undefined>
 
     // https://router.vuejs.org/guide/advanced/data-fetching
+    const data = await updateData()
 
-    loading.value = true
+    if (error_api) {
+      console.error('Error fetching data', error_api)
 
-    // Imagine this is are API data
-    const homes_data: Home[] = [
-      {
-        name: 'Casa Diego',
-        code: 'abc123'
-      },
-      {
-        name: 'Casa Maggie',
-        code: 'def456'
-      },
-      {
-        name: 'Casa Tomi',
-        code: 'ghi789'
-      }
-    ]
-
-    const rooms_data: Record<Home['code'], Room[]> = {
-      abc123: [
-        {
-          name: 'Playroom',
-          code: 'abc123-1'
-        },
-        {
-          name: 'Living',
-          code: 'abc123-2'
-        },
-        {
-          name: 'Cocina',
-          code: 'abc123-3'
-        }
-      ],
-      def456: [
-        {
-          name: 'Cuarto Principal',
-          code: 'def456-1'
-        },
-        {
-          name: 'Cuarto de Invitados',
-          code: 'def456-2'
-        }
-      ]
-    }
-
-    loading.value = false
-
-    // If home or room are not within the available options, redirect to NotFound
-    if (
-      (home && !homes_data.some((e) => e.code === home)) ||
-      (room && !rooms_data[home]?.some((e) => e.code === room))
-    ) {
       await router.replace({
         name: 'NotFound',
         // preserve current path and remove the first char to avoid the target URL starting with `//`
@@ -120,7 +66,9 @@ watch(
     }
 
     // If there are no homes available, redirect to NotFound (TODO: Add first house flow)
-    if (!homes_data.length) {
+    if (!data?.homes.length) {
+      console.log(data)
+
       await router.replace({
         name: 'NotFound',
         // preserve current path and remove the first char to avoid the target URL starting with `//`
@@ -133,36 +81,69 @@ watch(
       return
     }
 
-    // Redirect to the first available home and room if none is provided
+    // Redirect to the first available home if none is provided
     if (!home) {
       router.replace({
         name: 'dashboard',
         params: {
-          home: home || homes_data[0]?.code,
-          room: rooms_data[home]?.[0]?.code
+          home: data.homes[0]?.code
         }
+      })
+
+      return
+    }
+
+    await setCurrentHome(home)
+
+    if (error_home) {
+      console.error('Error fetching home data', error_home)
+
+      await router.replace({
+        name: 'NotFound',
+        // preserve current path and remove the first char to avoid the target URL starting with `//`
+        params: { pathMatch: route.path.substring(1).split('/') },
+        // preserve existing query and hash if any
+        query: route.query,
+        hash: route.hash
       })
 
       return
     }
 
     // Redirect to the first available room if possible (maybe the house has no rooms)
-    if (!room && rooms_data[home]?.length) {
+    if (!room && (await home_rooms)?.length) {
       router.replace({
         name: 'dashboard',
         params: {
           home,
-          room: rooms_data[home][0].code
+          room: (await home_rooms)[0].code
         }
       })
 
       return
     }
 
-    data.value = { homes: homes_data, rooms: rooms_data[home] ?? [] }
+    if (room) {
+      await setCurrentRoom(room)
+
+      if (error_room) {
+        console.error('Error fetching room data', error_room)
+
+        await router.replace({
+          name: 'NotFound',
+          // preserve current path and remove the first char to avoid the target URL starting with `//`
+          params: { pathMatch: route.path.substring(1).split('/') },
+          // preserve existing query and hash if any
+          query: route.query,
+          hash: route.hash
+        })
+
+        return
+      }
+    }
 
     initial_home.value = home
-    initial_room.value = room
+    initial_room.value = room ?? null
   },
   { immediate: true }
 )
@@ -227,6 +208,9 @@ function changeRoom(room: string) {
         </div>
       </div>
     </v-toolbar-title>
+    <template #append>
+      <h1>Hi</h1>
+    </template>
     <v-spacer></v-spacer>
   </v-app-bar>
 </template>
