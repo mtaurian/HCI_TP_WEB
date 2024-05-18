@@ -16,6 +16,7 @@
 
 import BlindController from '@/components/devices/BlindController.vue'
 import { useHomeStore, useRoomStore, useDeviceStore } from '@/stores'
+import { ref } from 'vue'
 
 const homeStore = useHomeStore()
 const roomStore = useRoomStore()
@@ -33,6 +34,8 @@ defineEmits<{
    */
   delete: []
 }>()
+
+const change_room_value = ref(undefined as string | undefined)
 </script>
 
 <template>
@@ -69,7 +72,8 @@ defineEmits<{
           :items="homeStore.rooms.filter((r) => r.id !== roomStore.room?.id)"
           item-title="name"
           item-value="id"
-          @update:model-value="$emit('change_room', $event!)"
+          v-model="change_room_value"
+          @update:model-value="$emit('change_room', $event!), (change_room_value = undefined)"
           variant="underlined"
         ></v-select>
       </div>

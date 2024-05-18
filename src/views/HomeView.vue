@@ -1,13 +1,48 @@
 <script setup lang="ts">
 import ControllerPlaceholder from '@/components/ControllerPlaceholder.vue'
 import DevicesList from '@/components/DevicesList.vue'
+import { change_device_room, delete_device } from '@/api'
 
-function changeRoom(room: string) {
-  alert(`Room changed to ${room}`)
+import { useRoomStore, useDeviceStore } from '@/stores'
+
+const roomStore = useRoomStore()
+const deviceStore = useDeviceStore()
+
+async function changeRoom(room: string) {
+  if (!deviceStore.device) return
+
+  const confirmation = confirm(`¿Estás seguro de que deseas mover este dispositivo?`)
+  if (!confirmation) return
+
+  try {
+    if (!(await change_device_room(deviceStore.device.id, room)).result) {
+      alert('No se pudo cambiar el dispositivo de habitación')
+      return
+    }
+  } catch (error) {
+    alert('No se pudo cambiar el dispositivo de habitación')
+  }
+
+  // !? :)
+  roomStore.setCurrentRoom(roomStore.room!?.id)
 }
 
-function deleteDevice() {
-  alert('Device deleted')
+async function deleteDevice() {
+  if (!deviceStore.device) return
+
+  const confirmation = confirm('¿Estás seguro de que deseas eliminar este dispositivo?')
+  if (!confirmation) return
+
+  try {
+    if (!(await delete_device(deviceStore.device.id)).result) {
+      alert('No se pudo eliminar el dispositivo')
+      return
+    }
+  } catch (error) {
+    alert('No se pudo eliminar el dispositivo')
+  }
+
+  roomStore.setCurrentRoom(roomStore.room!?.id)
 }
 </script>
 
