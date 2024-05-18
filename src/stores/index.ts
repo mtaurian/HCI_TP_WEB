@@ -1,32 +1,31 @@
 import { ref, type Ref } from 'vue'
 import { acceptHMRUpdate, defineStore } from 'pinia'
-// import {
-//   get_homes,
-//   get_rooms,
-//   get_devices,
-//   get_home_rooms,
-//   get_room_devices,
-//   get_home
-// } from '@/api'
+import {
+  get_homes,
+  get_home_rooms,
+  get_room_devices,
+  get_home,
+  get_room,
+  get_device,
+  type ApiError
+} from '@/api'
 
-type DeviceType =
-  | 'lampara'
-  | 'aire'
-  | 'aspiradora'
-  | 'heladera'
-  | 'parlante'
-  | 'grifo'
-  | 'aspersor'
-  | 'persiana'
-  | 'cortina'
-  | 'toldo'
-  | 'horno'
-  | 'puerta'
-  | 'alarma'
-  | 'parlante'
+function handleApiError(err: unknown, ref: Ref<string | null>) {
+  if (err instanceof Error) {
+    console.error(err)
+    ref.value = err.message
+  } else {
+    const { error } = err as ApiError
+
+    console.error(err)
+
+    if (typeof error.description === 'string') ref.value = error.description
+    else ref.value = error.description.join(', ')
+  }
+}
 
 export const useAllHousesStore = defineStore('houses_data', () => {
-  const homes: Ref<{ name: string; code: string }[]> = ref([])
+  const homes: Ref<Awaited<ReturnType<typeof get_homes>>['result']> = ref([])
 
   const loading = ref(false)
   const error: Ref<string | null> = ref(null)
@@ -36,25 +35,9 @@ export const useAllHousesStore = defineStore('houses_data', () => {
     error.value = null
 
     try {
-      // homes.value = (await get_homes()) as { name: string; code: string }[]
-
-      homes.value = [
-        {
-          name: 'Casa Diego',
-          code: 'abc123'
-        },
-        {
-          name: 'Casa Juan',
-          code: 'def456'
-        },
-        {
-          name: 'Casa Pedro',
-          code: 'ghi789'
-        }
-      ]
+      homes.value = (await get_homes()).result
     } catch (e) {
-      console.error(e)
-      error.value = (e as { message: string }).message
+      handleApiError(e, error)
     }
 
     loading.value = false
@@ -69,9 +52,9 @@ export const useAllHousesStore = defineStore('houses_data', () => {
 })
 
 export const useHomeStore = defineStore('home_data', () => {
-  const home: Ref<{ name: string; code: string } | null> = ref(null)
-  const rooms: Ref<{ name: string; code: string }[]> = ref([])
-  const devices: Ref<{ name: string; code: string; type: DeviceType }[]> = ref([])
+  const home: Ref<Awaited<ReturnType<typeof get_home>>['result'] | null> = ref(null)
+  const rooms: Ref<Awaited<ReturnType<typeof get_home_rooms>>['result']> = ref([])
+  const devices: Ref<Awaited<ReturnType<typeof get_room_devices>>['result']> = ref([])
 
   const loading = ref(false)
   const error: Ref<string | null> = ref(null)
@@ -81,69 +64,30 @@ export const useHomeStore = defineStore('home_data', () => {
     error.value = null
 
     try {
-      // home.value = (await get_home(id)) as { name: string; code: string }
-      // home_rooms.value = (await get_home_rooms(home.value?.code)) as {
-      //   name: string
-      //   code: string
-      // }[]
+      home.value = (await get_home(id)).result
+      rooms.value = (await get_home_rooms(home.value?.id)).result
 
-      // home_devices.value = []
-      // for (const room of home_rooms.value) {
-      //   try {
-      //     home_devices.value.push(
-      //       ...((await get_room_devices(room.code)) as {
-      //         name: string
-      //         code: string
-      //         type: DeviceType
-      //       }[])
-      //     )
-      //   } catch (e) {
-      //     error.value = (e as { message: string }).message
-      //     home_devices.value = []
-      //     break
-      //   }
-      // }
-
-      home.value = {
-        name: 'Casa Diego',
-        code: 'abc123'
+      devices.value = []
+      for (const room of rooms.value) {
+        try {
+          devices.value.push(...(await get_room_devices(room.id)).result)
+        } catch (e) {
+          handleApiError(e, error)
+          break
+        }
       }
-
-      rooms.value = [
-        {
-          name: 'Sala',
-          code: 'abc123'
-        },
-        {
-          name: 'Cocina',
-          code: 'def456'
-        },
-        {
-          name: 'Baño',
-          code: 'ghi789'
-        }
-      ]
-
-      devices.value = [
-        {
-          name: 'Persiana',
-          code: 'abc123',
-          type: 'persiana'
-        },
-        {
-          name: 'Ventilador',
-          code: 'def456',
-          type: 'aire'
-        },
-        {
-          name: 'Horno 7000',
-          code: 'ghi789',
-          type: 'horno'
-        }
-      ] as { name: string; code: string; type: DeviceType }[]
     } catch (e) {
-      console.error(e)
-      error.value = (e as { message: string }).message
+      if (e instanceof Error) {
+        console.error(e)
+        error.value = e.message
+      } else {
+        const err = e as ApiError
+
+        console.error(err.error)
+
+        if (typeof err.error.description === 'string') error.value = err.error.description
+        else error.value = err.error.description.join(', ')
+      }
     }
 
     loading.value = false
@@ -160,8 +104,8 @@ export const useHomeStore = defineStore('home_data', () => {
 })
 
 export const useRoomStore = defineStore('room_data', () => {
-  const room: Ref<{ name: string; code: string } | null> = ref(null)
-  const devices: Ref<{ name: string; code: string; type: DeviceType }[]> = ref([])
+  const room: Ref<Awaited<ReturnType<typeof get_room>>['result'] | null> = ref(null)
+  const devices: Ref<Awaited<ReturnType<typeof get_room_devices>>['result']> = ref([])
 
   const loading = ref(false)
   const error: Ref<string | null> = ref(null)
@@ -171,38 +115,10 @@ export const useRoomStore = defineStore('room_data', () => {
     error.value = null
 
     try {
-      // room.value = (await get_room(id)) as { name: string; code: string }
-      // room_devices.value = (await get_room_devices(room.value?.code)) as {
-      //   name: string
-      //   code: string
-      //   type: DeviceType
-      // }[]
-
-      room.value = {
-        name: 'Casa Diego',
-        code: 'abc123'
-      }
-
-      devices.value = [
-        {
-          name: 'Persiana',
-          code: 'abc123',
-          type: 'persiana'
-        },
-        {
-          name: 'Ventilador',
-          code: 'def456',
-          type: 'aire'
-        },
-        {
-          name: 'Horno 7000',
-          code: 'ghi789',
-          type: 'horno'
-        }
-      ] as { name: string; code: string; type: DeviceType }[]
+      room.value = (await get_room(id)).result
+      devices.value = (await get_room_devices(room.value?.id)).result
     } catch (e) {
-      console.error(e)
-      error.value = (e as { message: string }).message
+      handleApiError(e, error)
     }
 
     loading.value = false
@@ -218,7 +134,7 @@ export const useRoomStore = defineStore('room_data', () => {
 })
 
 export const useDeviceStore = defineStore('device_data', () => {
-  const device: Ref<{ name: string; code: string; type: DeviceType } | null> = ref(null)
+  const device: Ref<Awaited<ReturnType<typeof get_device>>['result'] | null> = ref(null)
   const loading = ref(false)
   const error: Ref<string | null> = ref(null)
 
@@ -227,16 +143,9 @@ export const useDeviceStore = defineStore('device_data', () => {
     error.value = null
 
     try {
-      // device.value = (await get_device(id)) as { name: string; code: string }
-
-      device.value = {
-        name: 'Persiana',
-        code: 'abc123',
-        type: 'persiana'
-      }
+      device.value = (await get_device(id)).result
     } catch (e) {
-      console.error(e)
-      error.value = (e as { message: string }).message
+      handleApiError(e, error)
     }
 
     loading.value = false

@@ -87,7 +87,7 @@ watch(
       await router.replace({
         name: 'dashboard',
         params: {
-          home: housesStore.homes[0]?.code
+          home: housesStore.homes[0]?.id
         }
       })
 
@@ -117,7 +117,7 @@ watch(
         name: 'dashboard',
         params: {
           home,
-          room: homeStore.rooms[0].code
+          room: homeStore.rooms[0].id
         }
       })
 
@@ -169,7 +169,7 @@ function changeRoom(room: string) {
             v-model="initial_home"
             :items="housesStore.homes"
             item-title="name"
-            item-value="code"
+            item-value="id"
             :loading
             :disabled="loading"
             @update:modelValue="changeHome"
@@ -188,7 +188,7 @@ function changeRoom(room: string) {
             v-model="initial_room"
             :items="homeStore.rooms"
             item-title="name"
-            item-value="code"
+            item-value="id"
             :loading
             :disabled="loading"
             @update:modelValue="changeRoom"

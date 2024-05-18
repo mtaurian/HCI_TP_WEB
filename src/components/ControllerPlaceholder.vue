@@ -42,22 +42,23 @@ defineEmits<{
     </div>
     <div class="controller">
       <!-- Component picking here -->
-      <p v-if="deviceStore.device.type === 'aire'">Aire</p>
-      <p v-else-if="deviceStore.device.type === 'lampara'">Lámpara</p>
-      <p v-else-if="deviceStore.device.type === 'aspiradora'">Aspiradora</p>
-      <p v-else-if="deviceStore.device.type === 'heladera'">Heladera</p>
-      <p v-else-if="deviceStore.device.type === 'parlante'">Parlante</p>
-      <p v-else-if="deviceStore.device.type === 'grifo'">Grifo</p>
-      <p v-else-if="deviceStore.device.type === 'aspersor'">Aspersor</p>
+      <p v-if="deviceStore.device.type.name === 'aire'">Aire</p>
+      <p v-else-if="deviceStore.device.type.name === 'lampara'">Lámpara</p>
+      <p v-else-if="deviceStore.device.type.name === 'aspiradora'">Aspiradora</p>
+      <p v-else-if="deviceStore.device.type.name === 'heladera'">Heladera</p>
+      <p v-else-if="deviceStore.device.type.name === 'parlante'">Parlante</p>
+      <p v-else-if="deviceStore.device.type.name === 'grifo'">Grifo</p>
+      <p v-else-if="deviceStore.device.type.name === 'aspersor'">Aspersor</p>
       <BlindController
-        v-else-if="deviceStore.device.type === 'persiana'"
-        :device_id="deviceStore.device.code"
+        v-else-if="deviceStore.device.type.name === 'blinds'"
+        :device_id="deviceStore.device.id"
+        :height="deviceStore.device.state.level"
       />
-      <p v-else-if="deviceStore.device.type === 'cortina'">Cortina</p>
-      <p v-else-if="deviceStore.device.type === 'toldo'">Toldo</p>
-      <p v-else-if="deviceStore.device.type === 'horno'">Horno</p>
-      <p v-else-if="deviceStore.device.type === 'puerta'">Puerta</p>
-      <p v-else-if="deviceStore.device.type === 'alarma'">Alarma</p>
+      <p v-else-if="deviceStore.device.type.name === 'cortina'">Cortina</p>
+      <p v-else-if="deviceStore.device.type.name === 'toldo'">Toldo</p>
+      <p v-else-if="deviceStore.device.type.name === 'horno'">Horno</p>
+      <p v-else-if="deviceStore.device.type.name === 'puerta'">Puerta</p>
+      <p v-else-if="deviceStore.device.type.name === 'alarma'">Alarma</p>
       <p v-else>¡Dispositivo desconocido!</p>
     </div>
 
@@ -65,9 +66,9 @@ defineEmits<{
       <div class="select">
         <v-select
           label="Cambiar habitación"
-          :items="homeStore.rooms.filter((r) => r.code !== roomStore.room?.code)"
+          :items="homeStore.rooms.filter((r) => r.id !== roomStore.room?.id)"
           item-title="name"
-          item-value="code"
+          item-value="id"
           @update:model-value="$emit('change_room', $event!)"
           variant="underlined"
         ></v-select>

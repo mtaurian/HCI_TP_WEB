@@ -7,10 +7,10 @@ const roomStore = useRoomStore()
 const deviceStore = useDeviceStore()
 
 watch(
-  () => roomStore.room,
+  () => roomStore.devices,
   () => {
-    if (!deviceStore.device) {
-      deviceStore.setCurrentDevice(roomStore.devices[0].code)
+    if (roomStore.devices.length) {
+      deviceStore.setCurrentDevice(roomStore.devices[0].id)
     }
   }
 )
@@ -22,13 +22,13 @@ watch(
     <!-- As soon as we find out how the API works... -->
     <DeviceCard
       v-for="item in roomStore.devices"
-      :key="item.code"
+      :key="item.id"
       :deviceName="item.name"
-      state="item.state"
+      :state="`${item.state.status}`"
       stateIcon="item.stateIcon"
-      :isActive="item.code === deviceStore.device?.code"
-      :id="item.code"
-      @click="deviceStore.setCurrentDevice(item.code)"
+      :isActive="item.id === deviceStore.device?.id"
+      :id="item.id"
+      @click="deviceStore.setCurrentDevice(item.id)"
     />
   </div>
 </template>
