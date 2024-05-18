@@ -1,17 +1,17 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { execute_device_action } from '@/api'
+import { execute_device_action, type ApiReturns } from '@/api'
 
 const props = defineProps<{
   device_id: string
-  height: number
+  height: ApiReturns
 }>()
 
-const height = ref(props.height ?? 0)
+const height = ref((props.height as number) ?? 0)
 
 watch(height, () => {
   // Update the server with the new value
-  execute_device_action(props.device_id, 'setLevel', [height.value])
+  execute_device_action(props.device_id, 'setLevel', [height.value as number])
 })
 </script>
 
