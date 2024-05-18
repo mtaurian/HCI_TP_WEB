@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import { ref, watchEffect } from 'vue'
+import { ref, watch } from 'vue'
+import { execute_device_action } from '@/api'
 
-defineProps<{
+const props = defineProps<{
   device_id: string
+  height: number
 }>()
 
-// Fetch the device's data
-// const data = api()
+const height = ref(props.height ?? 0)
 
-const height = ref(50)
-watchEffect(() => {
+watch(height, () => {
   // Update the server with the new value
-  console.log(height.value)
+  execute_device_action(props.device_id, 'setLevel', [height.value])
 })
 </script>
 
