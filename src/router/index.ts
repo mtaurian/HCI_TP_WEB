@@ -11,6 +11,11 @@ const router = createRouter({
       component: LandingView
     },
     {
+      path: '/dashboard/routines',
+      name: 'routines',
+      component: LandingView
+    },
+    {
       path: '/dashboard/:home?',
       name: 'load-dashboard',
       component: HomeView
@@ -18,11 +23,6 @@ const router = createRouter({
     {
       path: '/dashboard/:home?/room/:room?',
       name: 'dashboard',
-      component: HomeView
-    },
-    {
-      path: '/dashboard/:home?/routines',
-      name: 'routines',
       component: HomeView
     },
     {
