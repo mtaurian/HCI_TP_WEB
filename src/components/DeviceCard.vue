@@ -4,24 +4,24 @@ const props = defineProps<{
   state: string
   stateIcon: string
   isActive: boolean
-  id : string
+  id: string
 }>()
+
 defineEmits<{
-
   click: [string]
-
 }>()
-
 </script>
 
 <template>
-  <v-card :color="isActive ? '#ff20e2' : ''" @click="$emit('click', id )" >
+  <v-card :color="isActive ? 'focus' : ''" @click="$emit('click', id)">
     <v-card-item>
       <template v-slot:title>
         {{ deviceName }}
       </template>
       <template v-slot:subtitle>
-        {{ state }}
+        <p class="capitalize">
+          {{ state }}
+        </p>
       </template>
       <v-icon role="img">
         {{ stateIcon }}
@@ -30,5 +30,8 @@ defineEmits<{
   </v-card>
 </template>
 
-
-<style></style>
+<style scoped>
+.capitalize::first-letter {
+  text-transform: capitalize;
+}
+</style>

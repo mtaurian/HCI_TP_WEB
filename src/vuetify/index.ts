@@ -25,6 +25,7 @@ const vuetify = createVuetify({
            * Changes the background color of things such as select elements and its childs
            */
           surface: '#9E72C3',
+          focus: '#FF20E2',
           accent: '#EEEEEE',
           error: '#FF5252',
           info: '#2196F3',
