@@ -19,13 +19,16 @@
 import { computed, ref, watch, type Ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAllHousesStore, useHomeStore, useRoomStore } from '@/stores'
-
+import AddHome from './AddHome.vue';
+import AddRoom from './AddRoom.vue';
 const router = useRouter()
 const route = useRoute()
 
 const housesStore = useAllHousesStore()
 const homeStore = useHomeStore()
 const roomStore = useRoomStore()
+const newHomeDialog = ref(false)
+const newRoomDialog = ref(false)
 
 // This must be only used in the select to set the initial values
 // If you want to get the current value, use route.params.home and route.params.room respectively
@@ -39,6 +42,18 @@ const initial_home: Ref<string | null> = ref(null)
 const initial_room: Ref<string | null> = ref(null)
 
 const loading = computed(() => housesStore.loading || homeStore.loading || roomStore.loading)
+function openNewHome() {
+  newHomeDialog.value = true
+}
+function openNewRoom() {
+  newRoomDialog.value = true
+}
+function closeNewHome() {
+  newHomeDialog.value = false
+}
+function closeNewRoom() {
+  newRoomDialog.value = false
+}
 
 watch(
   [() => route.params.home, () => route.params.room],
@@ -150,58 +165,44 @@ watch(
 )
 
 function changeHome(home: string) {
+  console.log(home)
   router.push({ name: 'dashboard', params: { home } })
 }
 
 function changeRoom(room: string) {
   router.push({ name: 'dashboard', params: { home: route.params.home, room } })
 }
+
 </script>
 
 <template>
+  <AddHome @turnoff="closeNewHome" @changehome="changeHome" :dialog="newHomeDialog" />
+  <AddRoom @turnoff="closeNewRoom" @changeroom="changeRoom" :dialog="newRoomDialog"
+    :code="(homeStore.home?.meta && typeof homeStore.home?.meta.houseCode === 'string') ? homeStore.home?.meta.houseCode : null"
+    :homeId="'jdj'" />
   <v-app-bar app class="bg-background" flat>
     <v-toolbar-title>
       <div class="flex">
         <img src="@/assets/logo.png" alt="logo" class="logo" />
         <div class="select">
-          <v-select
-            label="Casa"
-            v-model="initial_home"
-            :items="housesStore.homes"
-            item-title="name"
-            item-value="id"
-            :loading
-            :disabled="loading"
-            @update:modelValue="changeHome"
-            variant="solo-filled"
-            density="compact"
-          >
+          <v-select label="Casa" v-model="initial_home" :items="housesStore.homes" item-title="name" item-value="id"
+            :loading :disabled="loading" @update:modelValue="changeHome" variant="solo-filled" density="compact">
             <template #no-data></template>
-            <template #append-item>
-              <v-list-item prepend-icon="mdi-plus" link variant="tonal">
+            <template #append-item @click="openNewHome">
+              <v-list-item prepend-icon="mdi-plus" link variant="tonal" @click="openNewHome">
                 <v-list-item-title>Crear Casa</v-list-item-title>
               </v-list-item>
             </template>
           </v-select>
-          <v-select
-            label="Cuarto"
-            v-model="initial_room"
-            :items="homeStore.rooms"
-            item-title="name"
-            item-value="id"
-            :loading
-            :disabled="loading"
-            @update:modelValue="changeRoom"
-            variant="solo-filled"
-            density="compact"
-          >
+          <v-select label="Cuarto" v-model="initial_room" :items="homeStore.rooms" item-title="name" item-value="id"
+            :loading :disabled="loading" @update:modelValue="changeRoom" variant="solo-filled" density="compact">
             <template #no-data>
               <v-list-item v-if="!route.params.home" disabled>
                 <v-list-item-title>Seleccioná una casa primero</v-list-item-title>
               </v-list-item>
             </template>
-            <template #append-item v-if="route.params.home">
-              <v-list-item prepend-icon="mdi-plus" link variant="tonal">
+            <template #append-item @click="openNewRoom">
+              <v-list-item prepend-icon="mdi-plus" link variant="tonal" @click="openNewRoom">
                 <v-list-item-title>Crear Cuarto</v-list-item-title>
               </v-list-item>
             </template>
@@ -236,7 +237,7 @@ function changeRoom(room: string) {
   height: 80px;
 }
 
-.select > * {
+.select>* {
   width: 40%;
 }
 </style>

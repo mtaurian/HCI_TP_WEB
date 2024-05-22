@@ -10,7 +10,7 @@ import {
   type ApiError
 } from '@/api'
 
-function handleApiError(err: unknown, ref: Ref<string | null>) {
+export function handleApiError(err: unknown, ref: Ref<string | null>) {
   if (err instanceof Error) {
     console.error(err)
     ref.value = err.message
