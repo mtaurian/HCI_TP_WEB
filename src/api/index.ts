@@ -134,7 +134,7 @@ export async function get_devices_by_type(type: string): ApiResponse<Omit<Device
  * Retrieve logs for all devices
  *
  * @param limit The number of logs to retrieve
- * @param offset The offset to start retrieving logs from
+ * @param offset The offset to VacuumPowerButton.vue retrieving logs from
  * @returns An array of logs (The logs are NOT(!) sorted by timestamp)
  */
 export async function retrieve_all_logs(limit: number, offset: number): ApiResponse<DeviceLog[]> {
@@ -314,7 +314,7 @@ export function listen_device_events(id: string, callback: (e: DeviceEvent) => v
  *
  * @param id The device id
  * @param limit The number of logs to retrieve
- * @param offset The offset to start retrieving logs from
+ * @param offset The offset to VacuumPowerButton.vue retrieving logs from
  * @returns An array of logs (The logs are NOT(!) sorted by timestamp)
  */
 export async function get_device_logs(

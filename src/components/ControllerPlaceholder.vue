@@ -18,6 +18,7 @@ import BlindController from '@/components/devices/BlindController.vue'
 import { useHomeStore, useRoomStore, useDeviceStore } from '@/stores'
 import { ref } from 'vue'
 import AddHome from './AddHome.vue';
+import VacuumController from '@/components/devices/VacuumController.vue'
 
 const homeStore = useHomeStore()
 const roomStore = useRoomStore()
@@ -48,7 +49,10 @@ const change_room_value = ref(undefined as string | undefined)
       <!-- Component picking here -->
       <p v-if="deviceStore.device.type.name === 'aire'">Aire</p>
       <p v-else-if="deviceStore.device.type.name === 'lampara'">Lámpara</p>
-      <p v-else-if="deviceStore.device.type.name === 'aspiradora'">Aspiradora</p>
+      <VacuumController
+        v-else-if="deviceStore.device.type.name === 'vacuum'"
+        :device_id="deviceStore.device.id"/>
+
       <p v-else-if="deviceStore.device.type.name === 'heladera'">Heladera</p>
       <p v-else-if="deviceStore.device.type.name === 'parlante'">Parlante</p>
       <p v-else-if="deviceStore.device.type.name === 'grifo'">Grifo</p>
