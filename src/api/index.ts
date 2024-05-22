@@ -18,9 +18,15 @@ export type ApiSong = {
   duration: string
 }
 
+export type Location = {
+  id : string,
+  name : string
+}
+
 export type ApiParams = string | number
-export type ApiReturns = string | number | boolean | ApiSong[] | null
+export type ApiReturns = string | number | boolean | ApiSong[] | Location |  null
 export type ApiEvent = Record<string, string | number | ApiSong>
+export type ApiState = ApiResponse<Device['state']>
 
 interface ApiVariable<Example, Type extends string> {
   type: Type

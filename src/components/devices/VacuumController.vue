@@ -52,6 +52,7 @@ import ChangeWorkLocation from '@/components/devices/components/Vacuum/ChangeWor
 .header {
   display : flex;
   margin-bottom: 3rem;
+  justify-items: center;
 }
 
 .power{

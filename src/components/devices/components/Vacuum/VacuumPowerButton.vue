@@ -6,17 +6,29 @@
       :color="isOn ? 'red-lighten-2' : 'green-lighten-2'"
       :size="50"
       variant="text"
-      :disabled="Number(props.state.result?.batteryLevel) < 5"
+      :disabled="Number(props.state.result?.batteryLevel) < 5 && !isOn"
     >
       <v-icon icon="mdi-power" :size="50" />
     </v-btn>
-    <v-label>{{isOn ? 'Pause' : (hasBattery() ? 'Start' : 'Too Low Battery')}}</v-label>
+    <v-label>{{isOn ? 'Pause' : (hasBattery() ? 'Start' : 'Low Battery')}}</v-label>
+  </div>
+  <div>
+    <v-snackbar
+      v-model="snackbar"
+      multi-line
+      timeout="3000"
+    >
+      {{ "Battery is very low. Going to charging base!" }}
+
+    </v-snackbar>
   </div>
 </template>
 
 <script setup lang="ts">
-import {  computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { type ApiSong, execute_device_action, get_device_state } from '@/api'
+
+const snackbar = ref(false);
 
 const props = defineProps<{
   state : { result: Record<string, string | number | boolean | ApiSong[] | null> },
@@ -29,8 +41,15 @@ enum PowerState {
   DOCKED = 'docked'
 }
 
+watch(() => props.state.result?.batteryLevel, async (newLvl, oldLvl) => {
+  if (Number(newLvl) <= 1 && isOn){
+    await handleVeryLowBattery();
+  }
+})
+
 const isOn = computed(()=>{
-  return props.state.result.status === PowerState.ACTIVE
+  const vlb = hasVeryLowBattery();
+  return props.state.result.status === PowerState.ACTIVE && !vlb;
 })
 
 const emit = defineEmits(['power-changed']);
@@ -43,6 +62,20 @@ const hasBattery = () => {
 }
 
 /**
+ * true if battery <= 1, otherwise false
+ */
+const hasVeryLowBattery = () =>{
+  return props.state.result?.batteryLevel as number <= 1
+}
+
+const handleVeryLowBattery = async () => {
+  await execute_device_action(props.device_id, 'dock', []);
+  emit('power-changed');
+  snackbar.value = true;
+}
+
+
+/**
  * If hasBattery and device isOff, starts.
  * If does not hasBattery, device isOFf, and device is not docked: goes to dock
  * If does not hasBattery, device isOff, and device is docked: do nothing
@@ -53,7 +86,7 @@ const handleOnClick = async () => {
     await execute_device_action(props.device_id,'start', []);
     emit('power-changed');
   } else if (!hasBattery() && !isOn.value && props.state.result.status !== PowerState.DOCKED){
-    alert('Too low battery, going back to dock'); //TODO change it to modal and ask to confirm go to dock
+    alert('Low battery, going back to dock');
     await execute_device_action(props.device_id,'dock', []);
     emit('power-changed');
   } else if (!hasBattery() && !isOn.value){
@@ -69,6 +102,7 @@ const handleOnClick = async () => {
 
 .power-button{
   display : flex;
+  margin-right: 20px;
   flex-direction: column;
   justify-content: center;
   justify-items: center;
