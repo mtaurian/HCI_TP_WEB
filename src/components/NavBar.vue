@@ -179,7 +179,7 @@ function changeRoom(room: string) {
   <AddHome @turnoff="closeNewHome" @changehome="changeHome" :dialog="newHomeDialog" />
   <AddRoom @turnoff="closeNewRoom" @changeroom="changeRoom" :dialog="newRoomDialog"
     :code="(homeStore.home?.meta && typeof homeStore.home?.meta.houseCode === 'string') ? homeStore.home?.meta.houseCode : null"
-    :homeId="'jdj'" />
+    :homeId="(homeStore.home?.id) ? homeStore.home?.id : ''" />
   <v-app-bar app class="bg-background" flat>
     <v-toolbar-title>
       <div class="flex">

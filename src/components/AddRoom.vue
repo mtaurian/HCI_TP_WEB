@@ -37,7 +37,7 @@ const error: Ref<string | null> = ref(null)
 
 
 function resetValues() {
-  roomName.value = "CASA 1"
+  roomName.value = "CUARTO DE TOMI"
   houseCode.value = null
   roomAddress.value = null
   isSwitchOn.value = true
@@ -59,7 +59,7 @@ async function submit() {
     } else {
       newRoom = await add_room(roomName.value, { roomCode: houseCode.value })
     }
-    add_room_to_home(newRoom.result.id, props.homeId)
+    add_room_to_home(props.homeId, newRoom.result.id)
     emit('changeroom', newRoom.result.id)
 
   } catch (e) {
@@ -101,7 +101,7 @@ const isValidStepCode = computed(() => ishomeCodeValid.value);
 <template>
   <v-dialog v-model="props.dialog" width="700">
     <v-card>
-      <v-icon color="success" icon="mdi-access-point" size="small"></v-icon>
+      <!--<v-icon color="success" icon="mdi-access-point" size="small"></v-icon>-->
       <v-stepper-vertical v-model=currentStep theme="light">
         <v-stepper-vertical-item v-if="props.code" :title="`Paso ${n}`" :value="n">
           <v-card title="Introduce el pin de seguridad de tu hogar" flat>
@@ -111,7 +111,7 @@ const isValidStepCode = computed(() => ishomeCodeValid.value);
             </v-card-text>
           </v-card>
           <template v-slot:next>
-            <v-btn :disabled="!isValidStepCode" @click="currentStep++" />
+            <v-btn :disabled="!isValidStepCode" @click="currentStep += 1" />
           </template>
         </v-stepper-vertical-item>
 
@@ -123,7 +123,7 @@ const isValidStepCode = computed(() => ishomeCodeValid.value);
             </v-card-text>
           </v-card>
           <template v-slot:next>
-            <v-btn :disabled="!isValidStepName" @click="currentStep++" />
+            <v-btn :disabled="!isValidStepName" @click="currentStep += 1" />
           </template>
 
         </v-stepper-vertical-item>
