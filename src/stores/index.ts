@@ -7,7 +7,7 @@ import {
   get_home,
   get_room,
   get_device,
-  type ApiError
+  type ApiError, get_routines, get_routine
 } from '@/api'
 
 export function handleApiError(err: unknown, ref: Ref<string | null>) {
@@ -55,6 +55,7 @@ export const useHomeStore = defineStore('home_data', () => {
   const home: Ref<Awaited<ReturnType<typeof get_home>>['result'] | null> = ref(null)
   const rooms: Ref<Awaited<ReturnType<typeof get_home_rooms>>['result']> = ref([])
   const devices: Ref<Awaited<ReturnType<typeof get_room_devices>>['result']> = ref([])
+  const routines: Ref<Awaited<ReturnType<typeof get_routines>>['result']> = ref([]);
 
   const loading = ref(false)
   const error: Ref<string | null> = ref(null)
@@ -66,6 +67,8 @@ export const useHomeStore = defineStore('home_data', () => {
     try {
       home.value = (await get_home(id)).result
       rooms.value = (await get_home_rooms(home.value?.id)).result
+      routines.value = (await get_routines()).result.filter((r) =>
+        "house_id" in r.meta  && home.value?.id === r.meta.house_id)
 
       devices.value = []
       for (const room of rooms.value) {
@@ -76,6 +79,7 @@ export const useHomeStore = defineStore('home_data', () => {
           break
         }
       }
+
     } catch (e) {
       if (e instanceof Error) {
         console.error(e)
@@ -97,6 +101,7 @@ export const useHomeStore = defineStore('home_data', () => {
     home,
     rooms,
     devices,
+    routines,
     loading,
     error,
     setCurrentHome
@@ -159,9 +164,37 @@ export const useDeviceStore = defineStore('device_data', () => {
   }
 })
 
+
+export const useRoutineStore = defineStore('routine_data', () => {
+  const routine: Ref<Awaited<ReturnType<typeof get_routine>>['result'] | null> = ref(null)
+  const loading = ref(false)
+  const error: Ref<string | null> = ref(null)
+
+  async function setCurrentRoutine(id: string) {
+    loading.value = true
+    error.value = null
+
+    try {
+      routine.value = (await get_routine(id)).result
+    } catch (e) {
+      handleApiError(e, error)
+    }
+
+    loading.value = false
+  }
+
+  return {
+    routine,
+    loading,
+    error,
+    setCurrentRoutine
+  }
+})
+
 if (import.meta.hot) {
   import.meta.hot.accept(acceptHMRUpdate(useAllHousesStore, import.meta.hot))
   import.meta.hot.accept(acceptHMRUpdate(useHomeStore, import.meta.hot))
   import.meta.hot.accept(acceptHMRUpdate(useRoomStore, import.meta.hot))
   import.meta.hot.accept(acceptHMRUpdate(useDeviceStore, import.meta.hot))
+  import.meta.hot.accept(acceptHMRUpdate(useRoutineStore, import.meta.hot))
 }

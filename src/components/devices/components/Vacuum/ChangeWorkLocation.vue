@@ -33,7 +33,7 @@
 </template>
 
 <script setup lang="ts">
-import { type ApiSong, execute_device_action } from '@/api/index.js'
+import { type ApiSong, type ApiState, execute_device_action } from '@/api/index.js'
 import { computed, ref } from 'vue'
 import { useHomeStore, useRoomStore } from '@/stores'
 type Locaction = {
@@ -47,7 +47,7 @@ const emit = defineEmits(['working-location-changed']);
 const roomNames = homeStore.rooms.map((r) => r.name)
 const props = defineProps<{
   device_id : string,
-  state : { result: Record<string, string | number | boolean | ApiSong[] | Locaction | null > }
+  state : ApiState
 }>()
 
 const currentLocation = computed(() => props.state.result.location as Locaction);

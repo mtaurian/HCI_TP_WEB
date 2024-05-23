@@ -19,12 +19,12 @@
 </template>
 
 <script setup lang="ts">
-import { type ApiSong } from '@/api/index.js'
+import { type ApiSong, type ApiState } from '@/api/index.js'
 import { computed } from 'vue'
 
 const props = defineProps<{
   device_id: string
-  state : { result: Record<string, string | number | boolean | ApiSong[] | null> }
+  state : ApiState
 }>()
 
 const bt_lvl = computed(() => {

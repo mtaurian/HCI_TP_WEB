@@ -26,12 +26,12 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { type ApiSong, execute_device_action, get_device_state } from '@/api'
+import { type ApiSong, type ApiState, execute_device_action, get_device_state } from '@/api'
 
 const snackbar = ref(false);
 
 const props = defineProps<{
-  state : { result: Record<string, string | number | boolean | ApiSong[] | null> },
+  state : ApiState,
   device_id: string
 }>()
 
@@ -104,8 +104,7 @@ const handleOnClick = async () => {
   display : flex;
   margin-right: 20px;
   flex-direction: column;
-  justify-content: center;
-  justify-items: center;
+  align-items: center;
 }
 
 </style>
