@@ -14,10 +14,11 @@
  * handles generic actions, while the child handles specific actions.
  */
 
-import BlindController from '@/components/devices/BlindController.vue'
 import { useHomeStore, useRoomStore, useDeviceStore } from '@/stores'
 import { ref } from 'vue'
 import AddHome from './AddHome.vue';
+import BlindController from '@/components/devices/BlindController.vue'
+import LampController from '@/components/devices/LampController.vue'
 import VacuumController from '@/components/devices/VacuumController.vue'
 
 const homeStore = useHomeStore()
@@ -48,7 +49,10 @@ const change_room_value = ref(undefined as string | undefined)
     <div class="controller">
       <!-- Component picking here -->
       <p v-if="deviceStore.device.type.name === 'aire'">Aire</p>
-      <p v-else-if="deviceStore.device.type.name === 'lampara'">Lámpara</p>
+      <LampController
+        v-else-if="deviceStore.device.type.name === 'lamp'"
+        :device_id="deviceStore.device.id"
+      />
       <VacuumController
         v-else-if="deviceStore.device.type.name === 'vacuum'"
         :device_id="deviceStore.device.id"/>
