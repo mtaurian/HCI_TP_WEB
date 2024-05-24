@@ -7,7 +7,12 @@ import {
   get_home,
   get_room,
   get_device,
-  type ApiError, get_routines, get_routine
+  get_routines,
+  get_routine,
+  listen_all_events,
+  listen_device_events,
+  type ApiError,
+  type ApiReturns
 } from '@/api'
 
 export function handleApiError(err: unknown, ref: Ref<string | null>) {
@@ -55,7 +60,7 @@ export const useHomeStore = defineStore('home_data', () => {
   const home: Ref<Awaited<ReturnType<typeof get_home>>['result'] | null> = ref(null)
   const rooms: Ref<Awaited<ReturnType<typeof get_home_rooms>>['result']> = ref([])
   const devices: Ref<Awaited<ReturnType<typeof get_room_devices>>['result']> = ref([])
-  const routines: Ref<Awaited<ReturnType<typeof get_routines>>['result']> = ref([]);
+  const routines: Ref<Awaited<ReturnType<typeof get_routines>>['result']> = ref([])
 
   const loading = ref(false)
   const error: Ref<string | null> = ref(null)
@@ -67,8 +72,9 @@ export const useHomeStore = defineStore('home_data', () => {
     try {
       home.value = (await get_home(id)).result
       rooms.value = (await get_home_rooms(home.value?.id)).result
-      routines.value = (await get_routines()).result.filter((r) =>
-        "house_id" in r.meta  && home.value?.id === r.meta.house_id)
+      routines.value = (await get_routines()).result.filter(
+        (r) => 'house_id' in r.meta && home.value?.id === r.meta.house_id
+      )
 
       devices.value = []
       for (const room of rooms.value) {
@@ -79,19 +85,8 @@ export const useHomeStore = defineStore('home_data', () => {
           break
         }
       }
-
     } catch (e) {
-      if (e instanceof Error) {
-        console.error(e)
-        error.value = e.message
-      } else {
-        const err = e as ApiError
-
-        console.error(err.error)
-
-        if (typeof err.error.description === 'string') error.value = err.error.description
-        else error.value = err.error.description.join(', ')
-      }
+      handleApiError(e, error)
     }
 
     loading.value = false
@@ -115,6 +110,8 @@ export const useRoomStore = defineStore('room_data', () => {
   const loading = ref(false)
   const error: Ref<string | null> = ref(null)
 
+  let events: ReturnType<typeof listen_all_events> | null = null
+
   async function setCurrentRoom(id: string) {
     loading.value = true
     error.value = null
@@ -125,6 +122,25 @@ export const useRoomStore = defineStore('room_data', () => {
     } catch (e) {
       handleApiError(e, error)
     }
+
+    if (events) events.close()
+    if (devices.value) {
+      events = listen_all_events((e) => {
+        const { event, args, deviceId } = e as {
+          event: string
+          args: Record<string, ApiReturns>
+          deviceId: string
+        }
+
+        if (event === 'statusChanged') {
+          const i = devices.value.findIndex((d) => d.id === deviceId)
+          if (i >= 0) {
+            console.log('statusChanged', args.newStatus)
+            devices.value[i].state.status = args.newStatus
+          }
+        }
+      })
+    } else events = null
 
     loading.value = false
   }
@@ -143,6 +159,8 @@ export const useDeviceStore = defineStore('device_data', () => {
   const loading = ref(false)
   const error: Ref<string | null> = ref(null)
 
+  let events: ReturnType<typeof listen_all_events> | null = null
+
   async function setCurrentDevice(id: string) {
     loading.value = true
     error.value = null
@@ -152,6 +170,21 @@ export const useDeviceStore = defineStore('device_data', () => {
     } catch (e) {
       handleApiError(e, error)
     }
+
+    if (events) events.close()
+    if (device.value) {
+      events = listen_device_events(id, (e) => {
+        const { event, args } = e as {
+          event: string
+          args: Record<string, ApiReturns>
+        }
+
+        if (event === 'statusChanged') {
+          // If device is null, the event listener is closed/not created
+          device.value!.state.status = args.newStatus
+        }
+      })
+    } else events = null
 
     loading.value = false
   }
@@ -163,7 +196,6 @@ export const useDeviceStore = defineStore('device_data', () => {
     setCurrentDevice
   }
 })
-
 
 export const useRoutineStore = defineStore('routine_data', () => {
   const routine: Ref<Awaited<ReturnType<typeof get_routine>>['result'] | null> = ref(null)
