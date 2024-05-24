@@ -16,7 +16,9 @@
 
 import BlindController from '@/components/devices/BlindController.vue'
 import VacuumController from '@/components/devices/VacuumController.vue'
-import { useDeviceStore, useHomeStore, useRoomStore } from '@/stores'
+import FaucetController from '@/components/devices/FaucetController.vue'
+
+import { useHomeStore, useRoomStore, useDeviceStore } from '@/stores'
 import { ref } from 'vue'
 
 const homeStore = useHomeStore()
@@ -55,7 +57,15 @@ const change_room_value = ref(undefined as string | undefined)
 
       <p v-else-if="deviceStore.device.type.name === 'heladera'">Heladera</p>
       <p v-else-if="deviceStore.device.type.name === 'parlante'">Parlante</p>
-      <p v-else-if="deviceStore.device.type.name === 'grifo'">Grifo</p>
+      <FaucetController
+        v-else-if="deviceStore.device.type.name === 'faucet'"
+        :device_id="deviceStore.device.id"
+        :device_name="deviceStore.device.name"
+        :open="deviceStore.device.state.status === 'opened'"
+        :meta="deviceStore.device.meta"
+      >
+        Grifo
+      </FaucetController>
       <p v-else-if="deviceStore.device.type.name === 'aspersor'">Aspersor</p>
       <BlindController
         v-else-if="deviceStore.device.type.name === 'blinds'"
