@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { add_home } from '@/api';
+import { add_home } from '@/api'
 import { computed, type Ref, ref } from 'vue'
-import { VStepperVertical, VStepperVerticalItem } from 'vuetify/lib/labs/components.mjs';
+import { VStepperVertical, VStepperVerticalItem } from 'vuetify/lib/labs/components.mjs'
 import { handleApiError } from '@/stores'
 
 const isSwitchOn = ref(true)
@@ -68,7 +68,6 @@ const houseNameRules = [
   (v: string) => (v && v.length >= 3 && v.length <= 60) || 'Debe contener 3-60 caracteres'
 ]
 
-
 const isHouseNameValid = computed(() => {
   return houseNameRules.every((rule) => rule(houseName.value) === true)
 })
@@ -88,11 +87,10 @@ const isValidStep2 = computed(() => !isSwitchOn.value || isHouseCodeValid.value)
 </script>
 
 <template>
-
   <v-dialog v-model="props.dialog" width="700">
     <v-card>
       <v-stepper-vertical v-model="currentStep" theme="light">
-        <v-stepper-vertical-item title="Paso 1" value="1" :complete="(currentStep>1)">
+        <v-stepper-vertical-item title="Paso 1" value="1" :complete="currentStep > 1">
           <v-card title="Introduce un nombre para tu hogar" flat>
             <v-card-text>
               <v-text-field
@@ -110,7 +108,7 @@ const isValidStep2 = computed(() => !isSwitchOn.value || isHouseCodeValid.value)
             <v-btn :disabled="!isValidStep1" @click="currentStep++" />
           </template>
         </v-stepper-vertical-item>
-        <v-stepper-vertical-item title="Paso 2" value="2":complete="(currentStep>2)">
+        <v-stepper-vertical-item title="Paso 2" value="2" :complete="currentStep > 2">
           <v-card title="Pin de seguridad" flat>
             <v-card>
               <v-card-text>
@@ -134,7 +132,7 @@ const isValidStep2 = computed(() => !isSwitchOn.value || isHouseCodeValid.value)
             <v-btn :disabled="!isValidStep2" @click="currentStep++" />
           </template>
         </v-stepper-vertical-item>
-        <v-stepper-vertical-item title="Paso 3" value="3" :complete="(currentStep>3)">
+        <v-stepper-vertical-item title="Paso 3" value="3" :complete="currentStep > 3">
           <v-card title="Intoduzca la ubicacion de su hogar" subtitle="Opcional" flat>
             <v-card>
               <v-card-text>
@@ -152,7 +150,7 @@ const isValidStep2 = computed(() => !isSwitchOn.value || isHouseCodeValid.value)
         </v-stepper-vertical-item>
       </v-stepper-vertical>
       <v-card v-if="error" color="error">{{ error }}</v-card>
-      <v-btn @click="emit('turnoff'),resetValues()">Cancelar</v-btn>
+      <v-btn @click="emit('turnoff'), resetValues()">Cancelar</v-btn>
     </v-card>
   </v-dialog>
 </template>

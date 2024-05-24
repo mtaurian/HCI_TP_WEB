@@ -16,7 +16,7 @@
 
 import { useHomeStore, useRoomStore, useDeviceStore } from '@/stores'
 import { ref } from 'vue'
-import AddHome from './AddHome.vue';
+import AddHome from './AddHome.vue'
 import BlindController from '@/components/devices/BlindController.vue'
 import FaucetController from '@/components/devices/FaucetController.vue'
 import LampController from '@/components/devices/LampController.vue'
