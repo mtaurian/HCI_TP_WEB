@@ -146,7 +146,7 @@ function resetValues() {
 async function submit() {
   loading.value = true
   try {
-    const newDevice = await add_device( deviceTypeSelect.value,deviceName.value,{})
+    const newDevice = await add_device( deviceTypeSelect.value,deviceName.value,{deviceIcon: iconSelected.value})
     await add_device_to_room(props.roomId,newDevice?.result.id)
   } catch (e) {
     handleApiError(e, error)
