@@ -34,8 +34,8 @@ const isOn = computed(() => {
 const emit = defineEmits(['power-changed'])
 
 /**
- * If lamp is on, change color.
- * Else informs how to proceed.
+ * If lamp is on and button pressed, turnOff.
+ * Else turnOn.
  */
 const handleOnClick = async () => {
   if (isOn.value) {
