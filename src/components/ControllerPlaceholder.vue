@@ -18,6 +18,7 @@ import { useHomeStore, useRoomStore, useDeviceStore } from '@/stores'
 import { ref } from 'vue'
 import AddHome from './AddHome.vue';
 import BlindController from '@/components/devices/BlindController.vue'
+import FaucetController from '@/components/devices/FaucetController.vue'
 import LampController from '@/components/devices/LampController.vue'
 import VacuumController from '@/components/devices/VacuumController.vue'
 
@@ -55,14 +56,26 @@ const change_room_value = ref(undefined as string | undefined)
       />
       <VacuumController
         v-else-if="deviceStore.device.type.name === 'vacuum'"
-        :device_id="deviceStore.device.id"/>
+        :device_id="deviceStore.device.id"
+      />
 
       <p v-else-if="deviceStore.device.type.name === 'heladera'">Heladera</p>
       <p v-else-if="deviceStore.device.type.name === 'parlante'">Parlante</p>
-      <p v-else-if="deviceStore.device.type.name === 'grifo'">Grifo</p>
+      <FaucetController
+        v-else-if="deviceStore.device.type.name === 'faucet'"
+        :device_id="deviceStore.device.id"
+        :device_name="deviceStore.device.name"
+        :open="deviceStore.device.state.status === 'opened'"
+        :meta="deviceStore.device.meta"
+      >
+        Grifo
+      </FaucetController>
       <p v-else-if="deviceStore.device.type.name === 'aspersor'">Aspersor</p>
-      <BlindController v-else-if="deviceStore.device.type.name === 'blinds'" :device_id="deviceStore.device.id"
-        :height="deviceStore.device.state.level" />
+      <BlindController
+        v-else-if="deviceStore.device.type.name === 'blinds'"
+        :device_id="deviceStore.device.id"
+        :height="deviceStore.device.state.level"
+      />
       <p v-else-if="deviceStore.device.type.name === 'cortina'">Cortina</p>
       <p v-else-if="deviceStore.device.type.name === 'toldo'">Toldo</p>
       <p v-else-if="deviceStore.device.type.name === 'horno'">Horno</p>
@@ -73,10 +86,15 @@ const change_room_value = ref(undefined as string | undefined)
 
     <div class="actions">
       <div class="select">
-        <v-select label="Cambiar habitación" :items="homeStore.rooms.filter((r) => r.id !== roomStore.room?.id)"
-          item-title="name" item-value="id" v-model="change_room_value"
+        <v-select
+          label="Cambiar habitación"
+          :items="homeStore.rooms.filter((r) => r.id !== roomStore.room?.id)"
+          item-title="name"
+          item-value="id"
+          v-model="change_room_value"
           @update:model-value="$emit('change_room', $event!), (change_room_value = undefined)"
-          variant="underlined"></v-select>
+          variant="underlined"
+        ></v-select>
       </div>
       <div class="button">
         <v-btn @click="$emit('delete')" color="error">
@@ -127,18 +145,18 @@ const change_room_value = ref(undefined as string | undefined)
   grid-column: 1 / 3;
 }
 
-.select>* {
+.select > * {
   width: 300px;
 }
 
 @media screen and (max-width: 1024px) {
-  .select>* {
+  .select > * {
     width: 200px;
   }
 }
 
 @media screen and (max-width: 768px) {
-  .select>* {
+  .select > * {
     width: 150px;
   }
 }

@@ -16,10 +16,10 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { type ApiSong, execute_device_action } from '@/api'
+import { type ApiSong, type ApiState, execute_device_action } from '@/api'
 
 const props = defineProps<{
-  state : { result: Record<string, string | number | boolean | ApiSong[] | null> },
+  state : ApiState,
   device_id: string
 }>()
 
@@ -48,8 +48,7 @@ const handleOnClick = async () => {
 .home-button{
   display : flex;
   flex-direction: column;
-  justify-content: center;
-  justify-items: center;
+  align-items: center;
 }
 
 </style>

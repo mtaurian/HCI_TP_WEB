@@ -9,7 +9,7 @@
 </template>
 
 <script setup lang="ts">
-import { type ApiSong, execute_device_action } from '@/api/index.js'
+import { type ApiSong, type ApiState, execute_device_action } from '@/api/index.js'
 import { ref } from 'vue'
 
 const modes = ['Vacuum', 'Mop']
@@ -17,7 +17,7 @@ const emit = defineEmits(['mode-changed']);
 
 const props = defineProps<{
   device_id : string,
-  state : { result: Record<string, string | number | boolean | ApiSong[] | null> }
+  state : ApiState
 }>()
 
 const capitalize = (str : string) => {

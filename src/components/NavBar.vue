@@ -18,9 +18,10 @@
 
 import { computed, ref, watch, type Ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useAllHousesStore, useHomeStore, useRoomStore } from '@/stores'
+import { useAllHousesStore, useHomeStore, useRoomStore, useRoutineStore } from '@/stores'
 import AddHome from './AddHome.vue';
 import AddRoom from './AddRoom.vue';
+import AddDevice from '@/components/AddDevice.vue'
 const router = useRouter()
 const route = useRoute()
 
@@ -29,7 +30,8 @@ const homeStore = useHomeStore()
 const roomStore = useRoomStore()
 const newHomeDialog = ref(false)
 const newRoomDialog = ref(false)
-
+const newDeviceDialog = ref(false)
+const routineStore = useRoutineStore();
 // This must be only used in the select to set the initial values
 // If you want to get the current value, use route.params.home and route.params.room respectively
 /**
@@ -48,17 +50,24 @@ function openNewHome() {
 function openNewRoom() {
   newRoomDialog.value = true
 }
+function openNewDevice() {
+  newDeviceDialog.value = true
+}
 function closeNewHome() {
   newHomeDialog.value = false
 }
+
 function closeNewRoom() {
   newRoomDialog.value = false
+}
+function closeNewDevice() {
+  newDeviceDialog.value = false
 }
 
 watch(
   [() => route.params.home, () => route.params.room],
   async () => {
-    if (!['load-dashboard', 'dashboard'].includes(route.name as string)) return
+    if (!['load-dashboard', 'dashboard', 'routines'].includes(route.name as string)) return
 
     const { home, room } = (route.params ?? {}) as Record<'home' | 'room', string | undefined>
 
@@ -99,13 +108,12 @@ watch(
 
     // Redirect to the first available home if none is provided
     if (!home) {
-      await router.replace({
-        name: 'dashboard',
-        params: {
-          home: housesStore.homes[0]?.id
-        }
-      })
-
+        await router.replace({
+          name: 'routines' === route.name ? 'routines' : 'dashboard',
+          params: {
+            home: housesStore.homes[0]?.id
+          }
+        })
       return
     }
 
@@ -126,40 +134,44 @@ watch(
       return
     }
 
-    // Redirect to the first available room if possible (maybe the house has no rooms)
-    if (!room && homeStore.rooms?.length) {
-      await router.replace({
-        name: 'dashboard',
-        params: {
-          home,
-          room: homeStore.rooms[0].id
-        }
-      })
-
-      return
+    if( 'routines' === route.name) {
+      initial_home.value = home
+      await routineStore.setCurrentRoutine(homeStore.routines[0].id)
+      return;
     }
-
-    if (room) {
-      await roomStore.setCurrentRoom(room)
-
-      if (roomStore.error) {
-        console.error('Error fetching room data', roomStore.error)
-
+      // Redirect to the first available room if possible (maybe the house has no rooms)
+      if (!room && homeStore.rooms?.length) {
         await router.replace({
-          name: 'NotFound',
-          // preserve current path and remove the first char to avoid the target URL starting with `//`
-          params: { pathMatch: route.path.substring(1).split('/') },
-          // preserve existing query and hash if any
-          query: route.query,
-          hash: route.hash
+          name: 'dashboard',
+          params: {
+            home,
+            room: homeStore.rooms[0].id
+          }
         })
 
         return
       }
-    }
 
-    initial_home.value = home
+      if (room) {
+        await roomStore.setCurrentRoom(room)
+
+        if (roomStore.error) {
+          console.error('Error fetching room data', roomStore.error)
+
+          await router.replace({
+            name: 'NotFound',
+            // preserve current path and remove the first char to avoid the target URL starting with `//`
+            params: { pathMatch: route.path.substring(1).split('/') },
+            // preserve existing query and hash if any
+            query: route.query,
+            hash: route.hash
+          })
+
+          return
+        }
+      }
     initial_room.value = room ?? null
+    initial_home.value = home
   },
   { immediate: true }
 )
@@ -173,6 +185,17 @@ function changeRoom(room: string) {
   router.push({ name: 'dashboard', params: { home: route.params.home, room } })
 }
 
+function goToRoutinesEditor(){
+  const home = housesStore.homes[0]?.id
+  router.push({ name: 'routines', params: {home} })
+}
+
+function goToDevices(){
+  const home = housesStore.homes[0]?.id;
+  const room = homeStore.rooms[0].id;
+  router.push({ name: 'dashboard', params: {home, room} })
+}
+
 </script>
 
 <template>
@@ -180,6 +203,7 @@ function changeRoom(room: string) {
   <AddRoom @turnoff="closeNewRoom" @changeroom="changeRoom" :dialog="newRoomDialog"
     :code="(homeStore.home?.meta && typeof homeStore.home?.meta.houseCode === 'string') ? homeStore.home?.meta.houseCode : null"
     :homeId="(homeStore.home?.id) ? homeStore.home?.id : ''" />
+  <AddDevice :dialog="newDeviceDialog" :roomId="roomStore.room?.id? roomStore.room.id:''" @turnoff="closeNewDevice"/>
   <v-app-bar app class="bg-background" flat>
     <v-toolbar-title>
       <div class="flex">
@@ -188,20 +212,24 @@ function changeRoom(room: string) {
           <v-select label="Casa" v-model="initial_home" :items="housesStore.homes" item-title="name" item-value="id"
             :loading :disabled="loading" @update:modelValue="changeHome" variant="solo-filled" density="compact">
             <template #no-data></template>
-            <template #append-item @click="openNewHome">
+            <template #append-item>
               <v-list-item prepend-icon="mdi-plus" link variant="tonal" @click="openNewHome">
                 <v-list-item-title>Crear Casa</v-list-item-title>
               </v-list-item>
             </template>
           </v-select>
           <v-select label="Cuarto" v-model="initial_room" :items="homeStore.rooms" item-title="name" item-value="id"
-            :loading :disabled="loading" @update:modelValue="changeRoom" variant="solo-filled" density="compact">
+            :loading :disabled="loading" @update:modelValue="changeRoom" variant="solo-filled" density="compact"
+            v-if="!route.fullPath.includes('routines')">
+            <template v-slot:prepend-inner>
+              <v-icon>{{roomStore.room?.meta.roomIcon}}</v-icon>
+            </template>
             <template #no-data>
               <v-list-item v-if="!route.params.home" disabled>
                 <v-list-item-title>Seleccioná una casa primero</v-list-item-title>
               </v-list-item>
             </template>
-            <template #append-item @click="openNewRoom">
+            <template #append-item>
               <v-list-item prepend-icon="mdi-plus" link variant="tonal" @click="openNewRoom">
                 <v-list-item-title>Crear Cuarto</v-list-item-title>
               </v-list-item>
@@ -211,10 +239,27 @@ function changeRoom(room: string) {
       </div>
     </v-toolbar-title>
     <template #append>
-      <h1>Hi</h1>
+      <v-btn class="routine-device-button"
+             v-if="route.fullPath.includes('routines')"
+             prepend-icon="mdi-devices"
+             variant="tonal"
+             @click="goToDevices"
+      >
+        Go to Devices
+      </v-btn>
+      <v-btn v-else class="routine-device-button"
+             prepend-icon="mdi-clipboard-list"
+             variant="tonal"
+             @click="goToRoutinesEditor"
+      >
+        Go to Routines
+      </v-btn>
     </template>
     <v-spacer></v-spacer>
   </v-app-bar>
+  <div class="boton_device">
+    <v-btn rounded height="50" color="white" width="170" @click="openNewDevice" prepend-icon="mdi-plus" size="" text="DISPOSITIVO"></v-btn>
+  </div>
 </template>
 
 <style scoped>
@@ -239,5 +284,16 @@ function changeRoom(room: string) {
 
 .select>* {
   width: 40%;
+}
+
+.routine-device-button{
+  margin-right: 2rem;
+}
+
+.boton_device {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  margin: 0 20px 20px 0;
 }
 </style>
