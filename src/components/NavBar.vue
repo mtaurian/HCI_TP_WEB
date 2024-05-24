@@ -21,6 +21,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAllHousesStore, useHomeStore, useRoomStore, useRoutineStore } from '@/stores'
 import AddHome from './AddHome.vue';
 import AddRoom from './AddRoom.vue';
+import AddDevice from '@/components/AddDevice.vue'
 const router = useRouter()
 const route = useRoute()
 
@@ -29,6 +30,7 @@ const homeStore = useHomeStore()
 const roomStore = useRoomStore()
 const newHomeDialog = ref(false)
 const newRoomDialog = ref(false)
+const newDeviceDialog = ref(false)
 const routineStore = useRoutineStore();
 // This must be only used in the select to set the initial values
 // If you want to get the current value, use route.params.home and route.params.room respectively
@@ -48,11 +50,18 @@ function openNewHome() {
 function openNewRoom() {
   newRoomDialog.value = true
 }
+function openNewDevice() {
+  newDeviceDialog.value = true
+}
 function closeNewHome() {
   newHomeDialog.value = false
 }
+
 function closeNewRoom() {
   newRoomDialog.value = false
+}
+function closeNewDevice() {
+  newDeviceDialog.value = false
 }
 
 watch(
@@ -194,6 +203,7 @@ function goToDevices(){
   <AddRoom @turnoff="closeNewRoom" @changeroom="changeRoom" :dialog="newRoomDialog"
     :code="(homeStore.home?.meta && typeof homeStore.home?.meta.houseCode === 'string') ? homeStore.home?.meta.houseCode : null"
     :homeId="(homeStore.home?.id) ? homeStore.home?.id : ''" />
+  <AddDevice :dialog="newDeviceDialog" :roomId="roomStore.room?.id? roomStore.room.id:''" @turnoff="closeNewDevice"/>
   <v-app-bar app class="bg-background" flat>
     <v-toolbar-title>
       <div class="flex">
@@ -247,6 +257,9 @@ function goToDevices(){
     </template>
     <v-spacer></v-spacer>
   </v-app-bar>
+  <div class="boton_device">
+    <v-btn rounded height="50" color="white" width="170" @click="openNewDevice" prepend-icon="mdi-plus" size="" text="DISPOSITIVO"></v-btn>
+  </div>
 </template>
 
 <style scoped>
@@ -277,5 +290,10 @@ function goToDevices(){
   margin-right: 2rem;
 }
 
-
+.boton_device {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  margin: 0 20px 20px 0;
+}
 </style>

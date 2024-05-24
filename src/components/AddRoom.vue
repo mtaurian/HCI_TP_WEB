@@ -157,7 +157,7 @@ async function submit() {
   }
   setTimeout(() => {
     emit('turnoff'), resetValues()
-  }, (error? 3000:1500))
+  }, (error.value? 3000:1500))
 }
 
 const roomNameRules = [
@@ -195,7 +195,7 @@ const isValidStepCode = computed(() => ishomeCodeValid.value)
     <v-card>
       <!--<v-icon color="success" icon="mdi-access-point" size="small"></v-icon>-->
       <v-stepper-vertical v-model="currentStep" theme="light">
-        <v-stepper-vertical-item v-if="props.code" title="Paso 1" :editable="currentStep==0" :complete="currentStep>=1">
+        <v-stepper-vertical-item v-if="props.code" title="Paso 1" icon="mdi-numeric-1" :complete="currentStep>=1">
           <v-card title="Introduce el pin de seguridad de tu hogar" flat>
             <v-card-text>
               <v-text-field v-model="houseCode" label="Código" :rules="homeCodeRules" clearable placeholder="1234"
@@ -207,7 +207,7 @@ const isValidStepCode = computed(() => ishomeCodeValid.value)
           </template>
         </v-stepper-vertical-item>
 
-        <v-stepper-vertical-item :title="`Paso ${(props.code? '2':'1')}`" :editable="(props.code? currentStep==1:currentStep==0)" :complete="(props.code? currentStep>1:currentStep>=1)">
+        <v-stepper-vertical-item :title="`Paso ${(props.code? '2':'1')}`" :icon="(props.code?'mdi-numeric-2':'mdi-numeric-1')" :complete="(props.code? currentStep>1:currentStep>=1)">
           <v-card title="Introduce un nombre para tu habitacion" flat>
             <v-card-text>
               <v-text-field v-model="roomName" counter="20" :rules="roomNameRules" clearable label="Nombre"
@@ -218,7 +218,7 @@ const isValidStepCode = computed(() => ishomeCodeValid.value)
             <v-btn :disabled="!isValidStepName" @click="currentStep += 1" />
           </template>
         </v-stepper-vertical-item>
-        <v-stepper-vertical-item :title="`Paso ${(props.code? '3':'2')}`" :editable="(props.code? currentStep==2:currentStep==1)">
+        <v-stepper-vertical-item :title="`Paso ${(props.code? '3':'2')}`" :icon="(props.code?'mdi-numeric-3':'mdi-numeric-2')">
           <v-card title="Seleccione un icono para su habitacion" subtitle="Opcional" flat>
             <v-card>
               <v-menu>
