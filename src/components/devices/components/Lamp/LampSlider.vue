@@ -1,5 +1,5 @@
 <template>
-  <div class="brightness-slider">>
+  <div class="brightness-slider">
     <v-slider
       label="Brightness"
       v-model="brightness"
