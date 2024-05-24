@@ -3,7 +3,7 @@
     <v-btn
       @click="handleOnClick"
       class="ma-2"
-      :color="isOn ? 'red-lighten-2' : 'green-lighten-2'"
+      :color="isOn ? 'green-lighten-2' : 'red-lighten-2'"
       :size="50"
       variant="text"
     >
@@ -15,10 +15,10 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { type ApiSong, execute_device_action } from '@/api'
+import { type ApiReturns, execute_device_action } from '@/api'
 
 const props = defineProps<{
-  state: { result: Record<string, string | number | boolean | ApiSong[] | null> }
+  state: { result: Record<string, ApiReturns> }
   device_id: string
 }>()
 
@@ -47,3 +47,15 @@ const handleOnClick = async () => {
   }
 }
 </script>
+
+<style scoped>
+
+.power-button{
+  display : flex;
+  margin-right: 20px;
+  flex-direction: column;
+  justify-content: center;
+  justify-items: center;
+}
+
+</style>
