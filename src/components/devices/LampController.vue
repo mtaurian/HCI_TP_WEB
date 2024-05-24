@@ -1,13 +1,24 @@
 <template>
-  <div>
-    <div class="header">
-      <PowerButton
-        class="power"
-        v-if="state"
-        :device_id="props.device_id"
-        :state="state"
-        @power-changed="updateDeviceState"
-      />
+  <div class="rows">
+    <div class="columns">
+      <div>
+        <PowerButton
+          class="power"
+          v-if="state"
+          :device_id="props.device_id"
+          :state="state"
+          @power-changed="updateDeviceState"
+        />
+      </div>
+      <div>
+        <BrigthnessSlider
+          class="slider"
+          v-if="state"
+          :device_id="props.device_id"
+          :state="state"
+          @color-changed="updateDeviceState"
+        />
+      </div>
     </div>
     <div>
       <ColorPicker
@@ -23,15 +34,16 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { type ApiSong, get_device_state } from '@/api'
+import { type ApiReturns, get_device_state } from '@/api'
 import PowerButton from '@/components/devices/components/Lamp/LampOnOff.vue'
 import ColorPicker from '@/components/devices/components/Lamp/LampColorPicker.vue'
+import BrigthnessSlider from '@/components/devices/components/Lamp/LampSlider.vue'
 
 const props = defineProps<{
   device_id: string
 }>()
 
-const state = ref<{ result: Record<string, string | number | boolean | ApiSong[] | null> }>()
+const state = ref<{  result: Record<string, ApiReturns>; }>()
 
 const updateDeviceState = async () => {
   state.value = await get_device_state(props.device_id)
@@ -44,28 +56,31 @@ onMounted(async () => {
 </script>
 
 <style>
-.header {
+.rows {
   display: flex;
-  margin-bottom: 3rem;
+  flex-direction: row;
+  align-items: center;
+  align-content: center;
+  justify-items: center;
 }
-
+.columns {
+  display: flex;
+  flex-direction: column;
+}
 .power {
+  margin-left: 50px;
   margin-right: 2rem;
   align-items: center;
 }
 
 .color {
-  margin-right: 10px;
+  height: 40px;
+  margin-bottom: 220px;
   align-items: center;
-  justify-content: center;
   align-content: center;
   justify-items: center;
 }
-
-.select {
-  margin-bottom: 0.5rem;
-}
-.progressBar {
-  margin-top: 1rem;
+.slider {
+  margin-top: 25px;
 }
 </style>
