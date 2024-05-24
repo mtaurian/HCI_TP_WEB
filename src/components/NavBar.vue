@@ -211,6 +211,9 @@ function goToDevices(){
           <v-select label="Cuarto" v-model="initial_room" :items="homeStore.rooms" item-title="name" item-value="id"
             :loading :disabled="loading" @update:modelValue="changeRoom" variant="solo-filled" density="compact"
             v-if="!route.fullPath.includes('routines')">
+            <template v-slot:prepend-inner>
+              <v-icon>{{roomStore.room?.meta.roomIcon}}</v-icon>
+            </template>
             <template #no-data>
               <v-list-item v-if="!route.params.home" disabled>
                 <v-list-item-title>Seleccioná una casa primero</v-list-item-title>

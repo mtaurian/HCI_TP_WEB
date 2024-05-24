@@ -20,7 +20,7 @@ export function handleApiError(err: unknown, ref: Ref<string | null>) {
     console.error(err)
 
     if (typeof error.description === 'string') ref.value = error.description
-    else ref.value = error.description.join(', ')
+    else ref.value = error.description.join(', ').toUpperCase()
   }
 }
 
