@@ -19,8 +19,8 @@
 import { computed, ref, watch, type Ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAllHousesStore, useHomeStore, useRoomStore, useRoutineStore } from '@/stores'
-import AddHome from './AddHome.vue';
-import AddRoom from './AddRoom.vue';
+import AddHome from './AddHome.vue'
+import AddRoom from './AddRoom.vue'
 import AddDevice from '@/components/AddDevice.vue'
 const router = useRouter()
 const route = useRoute()
@@ -31,7 +31,7 @@ const roomStore = useRoomStore()
 const newHomeDialog = ref(false)
 const newRoomDialog = ref(false)
 const newDeviceDialog = ref(false)
-const routineStore = useRoutineStore();
+const routineStore = useRoutineStore()
 // This must be only used in the select to set the initial values
 // If you want to get the current value, use route.params.home and route.params.room respectively
 /**
@@ -67,78 +67,72 @@ function closeNewDevice() {
 watch(
   [() => route.params.home, () => route.params.room],
   async () => {
-    if (!['load-dashboard', 'dashboard', 'routines'].includes(route.name as string)) return
+    if (['load-dashboard', 'dashboard'].includes(route.name as string)) {
+      const { home, room } = (route.params ?? {}) as Record<'home' | 'room', string | undefined>
 
-    const { home, room } = (route.params ?? {}) as Record<'home' | 'room', string | undefined>
+      // https://router.vuejs.org/guide/advanced/data-fetching
+      await housesStore.setHouses()
 
-    // https://router.vuejs.org/guide/advanced/data-fetching
-    await housesStore.setHouses()
+      if (housesStore.error) {
+        console.error('Error fetching data', housesStore.error)
 
-    if (housesStore.error) {
-      console.error('Error fetching data', housesStore.error)
+        // TODO: 500 page
+        await router.replace({
+          name: 'NotFound',
+          // preserve current path and remove the first char to avoid the target URL starting with `//`
+          params: { pathMatch: route.path.substring(1).split('/') },
+          // preserve existing query and hash if any
+          query: route.query,
+          hash: route.hash
+        })
 
-      // TODO: 500 page
-      await router.replace({
-        name: 'NotFound',
-        // preserve current path and remove the first char to avoid the target URL starting with `//`
-        params: { pathMatch: route.path.substring(1).split('/') },
-        // preserve existing query and hash if any
-        query: route.query,
-        hash: route.hash
-      })
+        return
+      }
 
-      return
-    }
+      // If there are no homes available, redirect to NotFound (TODO: Add first house flow)
+      if (!housesStore.homes?.length) {
+        console.error('No homes available')
 
-    // If there are no homes available, redirect to NotFound (TODO: Add first house flow)
-    if (!housesStore.homes?.length) {
-      console.error('No homes available')
+        await router.replace({
+          name: 'NotFound',
+          // preserve current path and remove the first char to avoid the target URL starting with `//`
+          params: { pathMatch: route.path.substring(1).split('/') },
+          // preserve existing query and hash if any
+          query: route.query,
+          hash: route.hash
+        })
 
-      await router.replace({
-        name: 'NotFound',
-        // preserve current path and remove the first char to avoid the target URL starting with `//`
-        params: { pathMatch: route.path.substring(1).split('/') },
-        // preserve existing query and hash if any
-        query: route.query,
-        hash: route.hash
-      })
+        return
+      }
 
-      return
-    }
-
-    // Redirect to the first available home if none is provided
-    if (!home) {
+      // Redirect to the first available home if none is provided
+      if (!home) {
         await router.replace({
           name: 'routines' === route.name ? 'routines' : 'dashboard',
           params: {
             home: housesStore.homes[0]?.id
           }
         })
-      return
-    }
+        return
+      }
 
-    await homeStore.setCurrentHome(home)
+      await homeStore.setCurrentHome(home)
 
-    if (homeStore.error) {
-      console.error('Error fetching home data', homeStore.error)
+      if (homeStore.error) {
+        console.error('Error fetching home data', homeStore.error)
 
-      await router.replace({
-        name: 'NotFound',
-        // preserve current path and remove the first char to avoid the target URL starting with `//`
-        params: { pathMatch: route.path.substring(1).split('/') },
-        // preserve existing query and hash if any
-        query: route.query,
-        hash: route.hash
-      })
+        await router.replace({
+          name: 'NotFound',
+          // preserve current path and remove the first char to avoid the target URL starting with `//`
+          params: { pathMatch: route.path.substring(1).split('/') },
+          // preserve existing query and hash if any
+          query: route.query,
+          hash: route.hash
+        })
 
-      return
-    }
+        return
+      }
 
-    if( 'routines' === route.name) {
-      initial_home.value = home
-      await routineStore.setCurrentRoutine(homeStore.routines[0].id)
-      return;
-    }
       // Redirect to the first available room if possible (maybe the house has no rooms)
       if (!room && homeStore.rooms?.length) {
         await router.replace({
@@ -170,47 +164,154 @@ watch(
           return
         }
       }
-    initial_room.value = room ?? null
-    initial_home.value = home
+
+      initial_room.value = room ?? null
+      initial_home.value = home
+    } else if (route.name === 'routines') {
+      const { home } = (route.params ?? {}) as { home: string | undefined }
+
+      // https://router.vuejs.org/guide/advanced/data-fetching
+      await housesStore.setHouses()
+
+      if (housesStore.error) {
+        console.error('Error fetching data', housesStore.error)
+
+        // TODO: 500 page
+        await router.replace({
+          name: 'NotFound',
+          // preserve current path and remove the first char to avoid the target URL starting with `//`
+          params: { pathMatch: route.path.substring(1).split('/') },
+          // preserve existing query and hash if any
+          query: route.query,
+          hash: route.hash
+        })
+
+        return
+      }
+
+      // If there are no homes available, redirect to NotFound (TODO: Add first house flow)
+      if (!housesStore.homes?.length) {
+        console.error('No homes available')
+
+        await router.replace({
+          name: 'NotFound',
+          // preserve current path and remove the first char to avoid the target URL starting with `//`
+          params: { pathMatch: route.path.substring(1).split('/') },
+          // preserve existing query and hash if any
+          query: route.query,
+          hash: route.hash
+        })
+
+        return
+      }
+
+      // Redirect to the first available home if none is provided
+      if (!home) {
+        await router.replace({
+          name: 'routines' === route.name ? 'routines' : 'dashboard',
+          params: {
+            home: housesStore.homes[0]?.id
+          }
+        })
+        return
+      }
+
+      await homeStore.setCurrentHome(home)
+
+      if (homeStore.error) {
+        console.error('Error fetching home data', homeStore.error)
+
+        await router.replace({
+          name: 'NotFound',
+          // preserve current path and remove the first char to avoid the target URL starting with `//`
+          params: { pathMatch: route.path.substring(1).split('/') },
+          // preserve existing query and hash if any
+          query: route.query,
+          hash: route.hash
+        })
+
+        return
+      }
+
+      await routineStore.setCurrentRoutine(homeStore.routines[0].id)
+
+      if (routineStore.error) {
+        console.error('Error fetching routine data', routineStore.error)
+
+        await router.replace({
+          name: 'NotFound',
+          // preserve current path and remove the first char to avoid the target URL starting with `//`
+          params: { pathMatch: route.path.substring(1).split('/') },
+          // preserve existing query and hash if any
+          query: route.query,
+          hash: route.hash
+        })
+
+        return
+      }
+
+      initial_home.value = home
+    }
   },
   { immediate: true }
 )
 
 function changeHome(home: string) {
   console.log(home)
-  router.push({ name: 'dashboard', params: { home } })
+  router.push({ name: route.name!, params: { home } })
 }
 
 function changeRoom(room: string) {
   router.push({ name: 'dashboard', params: { home: route.params.home, room } })
 }
 
-function goToRoutinesEditor(){
-  const home = housesStore.homes[0]?.id
-  router.push({ name: 'routines', params: {home} })
+function goToRoutinesEditor() {
+  const home = route.params.home
+  router.push({ name: 'routines', params: { home } })
 }
 
-function goToDevices(){
-  const home = housesStore.homes[0]?.id;
-  const room = homeStore.rooms[0].id;
-  router.push({ name: 'dashboard', params: {home, room} })
+function goToDevices() {
+  const home = route.params.home
+  const room = homeStore.rooms[0].id
+  router.push({ name: 'dashboard', params: { home, room } })
 }
-
 </script>
 
 <template>
   <AddHome @turnoff="closeNewHome" @changehome="changeHome" :dialog="newHomeDialog" />
-  <AddRoom @turnoff="closeNewRoom" @changeroom="changeRoom" :dialog="newRoomDialog"
-    :code="(homeStore.home?.meta && typeof homeStore.home?.meta.houseCode === 'string') ? homeStore.home?.meta.houseCode : null"
-    :homeId="(homeStore.home?.id) ? homeStore.home?.id : ''" />
-  <AddDevice :dialog="newDeviceDialog" :roomId="roomStore.room?.id? roomStore.room.id:''" @turnoff="closeNewDevice"/>
+  <AddRoom
+    @turnoff="closeNewRoom"
+    @changeroom="changeRoom"
+    :dialog="newRoomDialog"
+    :code="
+      homeStore.home?.meta && typeof homeStore.home?.meta.houseCode === 'string'
+        ? homeStore.home?.meta.houseCode
+        : null
+    "
+    :homeId="homeStore.home?.id ? homeStore.home?.id : ''"
+  />
+  <AddDevice
+    :dialog="newDeviceDialog"
+    :roomId="roomStore.room?.id ? roomStore.room.id : ''"
+    @turnoff="closeNewDevice"
+  />
   <v-app-bar app class="bg-background" flat>
     <v-toolbar-title>
       <div class="flex">
         <img src="@/assets/logo.png" alt="logo" class="logo" />
         <div class="select">
-          <v-select label="Casa" v-model="initial_home" :items="housesStore.homes" item-title="name" item-value="id"
-            :loading :disabled="loading" @update:modelValue="changeHome" variant="solo-filled" density="compact">
+          <v-select
+            label="Casa"
+            v-model="initial_home"
+            :items="housesStore.homes"
+            item-title="name"
+            item-value="id"
+            :loading
+            :disabled="loading"
+            @update:modelValue="changeHome"
+            variant="solo-filled"
+            density="compact"
+          >
             <template #no-data></template>
             <template #append-item>
               <v-list-item prepend-icon="mdi-plus" link variant="tonal" @click="openNewHome">
@@ -218,11 +319,21 @@ function goToDevices(){
               </v-list-item>
             </template>
           </v-select>
-          <v-select label="Cuarto" v-model="initial_room" :items="homeStore.rooms" item-title="name" item-value="id"
-            :loading :disabled="loading" @update:modelValue="changeRoom" variant="solo-filled" density="compact"
-            v-if="!route.fullPath.includes('routines')">
+          <v-select
+            label="Cuarto"
+            v-model="initial_room"
+            :items="homeStore.rooms"
+            item-title="name"
+            item-value="id"
+            :loading
+            :disabled="loading"
+            @update:modelValue="changeRoom"
+            variant="solo-filled"
+            density="compact"
+            v-if="!route.fullPath.includes('routines')"
+          >
             <template v-slot:prepend-inner>
-              <v-icon>{{roomStore.room?.meta.roomIcon}}</v-icon>
+              <v-icon>{{ roomStore.room?.meta.roomIcon }}</v-icon>
             </template>
             <template #no-data>
               <v-list-item v-if="!route.params.home" disabled>
@@ -239,18 +350,21 @@ function goToDevices(){
       </div>
     </v-toolbar-title>
     <template #append>
-      <v-btn class="routine-device-button"
-             v-if="route.fullPath.includes('routines')"
-             prepend-icon="mdi-devices"
-             variant="tonal"
-             @click="goToDevices"
+      <v-btn
+        class="routine-device-button"
+        v-if="route.fullPath.includes('routines')"
+        prepend-icon="mdi-devices"
+        variant="tonal"
+        @click="goToDevices"
       >
         Go to Devices
       </v-btn>
-      <v-btn v-else class="routine-device-button"
-             prepend-icon="mdi-clipboard-list"
-             variant="tonal"
-             @click="goToRoutinesEditor"
+      <v-btn
+        v-else
+        class="routine-device-button"
+        prepend-icon="mdi-clipboard-list"
+        variant="tonal"
+        @click="goToRoutinesEditor"
       >
         Go to Routines
       </v-btn>
@@ -258,7 +372,16 @@ function goToDevices(){
     <v-spacer></v-spacer>
   </v-app-bar>
   <div class="boton_device">
-    <v-btn rounded height="50" color="white" width="170" @click="openNewDevice" prepend-icon="mdi-plus" size="" text="DISPOSITIVO"></v-btn>
+    <v-btn
+      rounded
+      height="50"
+      color="white"
+      width="170"
+      @click="openNewDevice"
+      prepend-icon="mdi-plus"
+      size=""
+      text="DISPOSITIVO"
+    ></v-btn>
   </div>
 </template>
 
@@ -282,11 +405,11 @@ function goToDevices(){
   height: 80px;
 }
 
-.select>* {
+.select > * {
   width: 40%;
 }
 
-.routine-device-button{
+.routine-device-button {
   margin-right: 2rem;
 }
 
