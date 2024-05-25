@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { Routine } from '@/api'
+import { execute_routine, type Routine } from '@/api'
+import router from '@/router'
 
 const props = defineProps<{
   routine: Routine
@@ -9,6 +10,16 @@ const props = defineProps<{
 defineEmits<{
   click: [string]
 }>()
+
+const handleExecute = async () => {
+  try {
+    await execute_routine(props.routine.id);
+  } catch (error){
+    alert("something went wrong" )
+    console.log(error)
+  }
+}
+
 </script>
 
 <template>
@@ -19,14 +30,15 @@ defineEmits<{
     <v-card-item >
       <template v-slot:title>
         <div class="flex">
-        {{ props.routine.name }}
-          <v-btn icon="mdi-play" variant="tonal"/>
+            {{props.routine.name}}
+          <v-btn icon="mdi-play" variant="tonal"
+                 @click="handleExecute"
+          />
         </div>
       </template>
       <template v-slot:subtitle>
         <p class="capitalize">
-          Proxima ejecución: {{ props.routine.name }}
-        </p>
+          {{ props.routine.actions.length > 1 ? props.routine.actions.length + ' Registered actions' : '1 Registered action'  }}        </p>
       </template>
     </v-card-item>
   </v-card>
