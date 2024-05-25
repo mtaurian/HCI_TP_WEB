@@ -1,29 +1,32 @@
 <script setup lang="ts">
-import { add_home } from '@/api'
-import { computed, type Ref, ref } from 'vue'
+import { add_home, get_devices, get_homes } from '@/api'
+import { computed, onMounted, type Ref, ref, watch } from 'vue'
 import { handleApiError } from '@/stores'
+import { useRoute, useRouter } from 'vue-router'
 
 const isSwitchOn = ref(true)
-
+const router=useRouter()
+const route=useRoute()
 const houseName = ref('')
 const houseCode = ref(null)
 const houseAddress = ref(null)
 const currentStep = ref(1)
 const loading = ref(false)
 const error: Ref<string | null> = ref(null)
-const props = defineProps<{
-  dialog: boolean
-}>()
+const housesNames= (await get_homes()).result.map((item) => item.name)
+const dialog = ref(true)
+watch(dialog, (value) => {
+  if (!value) {
+    emit('turnoff')
+  }
+})
+
 const emit = defineEmits<{
   /**
-   * Emits an event to turnOff the addHome element
+   * Emits an event to turnoff the addHome element
    */
   turnoff: []
 
-  /**
-   * Emits an event to changeHome
-   */
-  changehome: [string]
 }>()
 function resetValues() {
   houseName.value = ''
@@ -34,6 +37,9 @@ function resetValues() {
   error.value = null
   loading.value = false
 }
+onMounted(() => {
+  resetValues()
+})
 
 async function submit() {
   loading.value = true
@@ -51,20 +57,22 @@ async function submit() {
     } else {
       newHome = await add_home(houseName.value, { houseCode: houseCode.value })
     }
-    console.log(newHome.result.id)
-    emit('changehome', newHome.result.id)
+
+      await router.push({ name: route.name!, params: { home: newHome.result.id } })
+
   } catch (e) {
     handleApiError(e, error)
   }
   setTimeout(() => {
-    emit('turnoff'), resetValues()
-  }, 1500)
+    dialog.value = false
+  }, error.value? 3000:1500)
 }
 
 const houseNameRules = [
   (v: string) => !!v || 'Obligatorio',
   (v: string) => /^[a-zA-Z0-9_ ]*$/.test(v) || 'Caracteres permitidos: a-z, A-Z, 0-9, _ y espacio',
-  (v: string) => (v && v.length >= 3 && v.length <= 60) || 'Debe contener 3-60 caracteres'
+  (v: string) => (v && v.length >= 3 && v.length <= 60) || 'Debe contener 3-60 caracteres',
+  (v: string) => !housesNames.includes(v) || 'Another house with the same name already exists!'
 ]
 
 const isHouseNameValid = computed(() => {
@@ -86,7 +94,7 @@ const isValidStep2 = computed(() => !isSwitchOn.value || isHouseCodeValid.value)
 </script>
 
 <template>
-  <v-dialog v-model="props.dialog" width="700">
+  <v-dialog v-model="dialog" width="700">
     <v-card>
       <v-stepper-vertical v-model="currentStep" theme="light">
         <v-stepper-vertical-item title="Paso 1" value="1" :complete="currentStep > 1">
@@ -95,7 +103,7 @@ const isValidStep2 = computed(() => !isSwitchOn.value || isHouseCodeValid.value)
               <v-text-field
                 required
                 v-model="houseName"
-                counter="20"
+                counter="60"
                 :rules="houseNameRules"
                 label="Nombre"
                 placeholder="CASA 1"
@@ -149,7 +157,7 @@ const isValidStep2 = computed(() => !isSwitchOn.value || isHouseCodeValid.value)
         </v-stepper-vertical-item>
       </v-stepper-vertical>
       <v-card v-if="error" color="error">{{ error }}</v-card>
-      <v-btn @click="emit('turnoff'), resetValues()">Cancelar</v-btn>
+      <v-btn @click="dialog=false">Cancelar</v-btn>
     </v-card>
   </v-dialog>
 </template>

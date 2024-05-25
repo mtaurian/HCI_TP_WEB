@@ -17,6 +17,7 @@ const loading = ref(false)
 const error: Ref<string | null> = ref(null)
 const paired = ref(false)
 const iconSelected = ref('')
+const usePin=ref(false)
 
 const roomStore = useRoomStore()
 const deviceStore = useDeviceStore()
@@ -132,6 +133,7 @@ const icons = [
 ]
 
 function resetValues() {
+  usePin.value=false
   deviceTypeSelect.value = ''
   deviceName.value = ''
   currentStep.value = 0
@@ -146,9 +148,8 @@ async function submit() {
 
   try {
     const newDevice = await add_device(deviceTypeSelect.value, deviceName.value, {
-      deviceIcon: iconSelected.value
+      deviceIcon: iconSelected.value, protected: usePin.value
     })
-
     await add_device_to_room(roomStore.room!?.id, newDevice.result.id)
     await roomStore.invalidate()
     await deviceStore.setCurrentDevice(newDevice.result.id)
@@ -186,7 +187,7 @@ function buscarDispositivo() {
   setTimeout(() => {
     loading.value = false
     paired.value = true
-  }, 3000)
+  }, 2500)
 }
 
 function setIcon() {
@@ -205,7 +206,7 @@ function setIcon() {
   } else if (deviceTypeSelect.value == deviceTypes[6].id) {
     iconSelected.value = 'mdi-lock'
   } else if (deviceTypeSelect.value == deviceTypes[7].id) {
-    iconSelected.value = 'mdi-acctv'
+    iconSelected.value = 'mdi-shield-lock'
   } else if (deviceTypeSelect.value == deviceTypes[8].id) {
     iconSelected.value = 'mdi-vacuum'
   } else if (deviceTypeSelect.value == deviceTypes[9].id) {
@@ -311,7 +312,7 @@ watch(dialog, (value) => {
             <v-card-text>
               <v-text-field
                 v-model="deviceName"
-                counter="20"
+                counter="60"
                 :rules="deviceNameRules"
                 clearable
                 label="Nombre"
@@ -349,6 +350,14 @@ watch(dialog, (value) => {
                 </v-list>
               </v-menu>
             </v-card>
+          </v-card>
+          <template v-slot:next>
+            <v-btn  @click="currentStep++" />
+          </template>
+        </v-stepper-vertical-item>
+        <v-stepper-vertical-item title="Paso 5" icon="mdi-numeric-5" :complete="currentStep > 4">
+          <v-card title="Utilizar el PIN de seguridad para este dispositvo" flat>
+            <v-switch v-model="usePin" label="Usar código" color="primary" class="mx-3"/>
           </v-card>
           <template v-slot:next>
             <v-btn

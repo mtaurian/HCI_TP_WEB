@@ -288,17 +288,15 @@ function goToDevices() {
 </script>
 
 <template>
-  <AddHome @turnoff="closeNewHome" @changehome="changeHome" :dialog="newHomeDialog" />
+  <AddHome @turnoff="closeNewHome"  v-if="newHomeDialog" />
   <AddRoom
     @turnoff="closeNewRoom"
-    @changeroom="changeRoom"
-    :dialog="newRoomDialog"
     :code="
       homeStore.home?.meta && typeof homeStore.home?.meta.houseCode === 'string'
         ? homeStore.home?.meta.houseCode
         : null
     "
-    :homeId="homeStore.home?.id ? homeStore.home?.id : ''"
+    v-if="newRoomDialog"
   />
 
   <v-app-bar app class="bg-background" flat>

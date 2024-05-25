@@ -1,15 +1,14 @@
 <script setup lang="ts">
-import { ref, computed, type Ref } from 'vue'
-import { add_room, add_room_to_home, type ApiError, type ApiMeta } from '@/api'
-import { handleApiError } from '@/stores'
+import { ref, computed, type Ref, watch, onMounted } from 'vue'
+import { add_room, add_room_to_home, get_rooms } from '@/api'
+import { handleApiError ,useHomeStore} from '@/stores'
+import { useRoute, useRouter } from 'vue-router'
 
 /**
  * Parametros del comoponente
  */
 const props = defineProps<{
-  dialog: boolean
   code: string | null
-  homeId: string
 }>()
 
 /**
@@ -25,6 +24,7 @@ const emit = defineEmits<{
    */
   changeroom: [string]
 }>()
+const homeStore = useHomeStore()
 const icons = [
   'airballoon',
   'airplane',
@@ -127,8 +127,15 @@ const icons = [
   'weight-lifter',
   'baby-face-outline'
 ]
-
-// const n = ref(props.code != null ? 0 : 1)
+const dialog = ref(true)
+watch(dialog, (value) => {
+  if (!value) {
+    emit('turnoff')
+  }
+})
+const roomsNames=(await get_rooms()).result.map((item) => item.name)
+const router=useRouter()
+const route=useRoute()
 const roomName = ref('')
 const houseCode = ref(null)
 const currentStep = ref(0)
@@ -144,20 +151,22 @@ function resetValues() {
   loading.value = false
   iconSelected.value = 'mdi-bed'
 }
-
+onMounted(() => {
+  resetValues()
+})
 async function submit() {
   loading.value = true
   try {
     let newRoom
     newRoom = await add_room(roomName.value, { roomIcon: iconSelected.value })
-    await add_room_to_home(props.homeId, newRoom.result.id)
-    emit('changeroom', newRoom.result.id)
+    await add_room_to_home(homeStore.home!?.id, newRoom.result.id)
+    await router.push({ name: 'dashboard', params: { home: route.params.home, room:newRoom.result.id } })
   } catch (e) {
     handleApiError(e, error)
   }
   setTimeout(
     () => {
-      emit('turnoff'), resetValues()
+      dialog.value=false
     },
     error.value ? 3000 : 1500
   )
@@ -166,7 +175,8 @@ async function submit() {
 const roomNameRules = [
   (v: string) => !!v || 'Obligatorio',
   (v: string) => /^[a-zA-Z0-9_ ]*$/.test(v) || 'Caracteres permitidos: a-z, A-Z, 0-9, _ y espacio',
-  (v: string) => (v && v.length >= 3 && v.length <= 60) || 'Debe contener 3-60 caracteres'
+  (v: string) => (v && v.length >= 3 && v.length <= 60) || 'Debe contener 3-60 caracteres',
+  (v: string) => !roomsNames.includes(v) || 'Another room with the same name already exists!'
 ]
 
 const isroomNameValid = computed(() => {
@@ -178,7 +188,7 @@ const homeCodeRules = [
   (v: any) => !!v || 'Obligatorio',
   (v: any) => /^[0-9]*$/.test(v) || 'Debe ser un número',
   (v: any) => (v && v.length == 4) || 'Debe ser de 4 caracteres',
-  (v: any) => v === props.code || 'Pin incorrecto'
+  (v: any) => v === homeStore.home?.meta.houseCode || 'Pin incorrecto'
 ]
 
 const ishomeCodeValid = computed(() => {
@@ -194,7 +204,7 @@ const isValidStepCode = computed(() => ishomeCodeValid.value)
 </script>
 
 <template>
-  <v-dialog v-model="props.dialog" width="700">
+  <v-dialog v-model="dialog" width="700">
     <v-card>
       <!--<v-icon color="success" icon="mdi-access-point" size="small"></v-icon>-->
       <v-stepper-vertical v-model="currentStep" theme="light">
@@ -230,7 +240,7 @@ const isValidStepCode = computed(() => ishomeCodeValid.value)
             <v-card-text>
               <v-text-field
                 v-model="roomName"
-                counter="20"
+                counter="60"
                 :rules="roomNameRules"
                 clearable
                 label="Nombre"
@@ -287,7 +297,7 @@ const isValidStepCode = computed(() => ishomeCodeValid.value)
         </v-stepper-vertical-item>
       </v-stepper-vertical>
       <v-card v-if="error" color="error">{{ error }}</v-card>
-      <v-btn @click="emit('turnoff'), resetValues()">Cancelar</v-btn>
+      <v-btn @click="dialog=false">Cancelar</v-btn>
     </v-card>
   </v-dialog>
 </template>
