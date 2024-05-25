@@ -61,7 +61,7 @@ export const useHomeStore = defineStore('home_data', () => {
   const home: Ref<Awaited<ReturnType<typeof get_home>>['result'] | null> = ref(null)
   const rooms: Ref<Awaited<ReturnType<typeof get_home_rooms>>['result']> = ref([])
   const devices: Ref<Awaited<ReturnType<typeof get_devices>>['result']> = ref([])
-  const routines: Ref<Awaited<ReturnType<typeof get_routines>>['result']> = ref([]);
+  const routines: Ref<Awaited<ReturnType<typeof get_routines>>['result']> = ref([])
 
   const loading = ref(false)
   const error: Ref<string | null> = ref(null)
@@ -77,7 +77,9 @@ export const useHomeStore = defineStore('home_data', () => {
         (r) => 'house_id' in r.meta && home.value?.id === r.meta.house_id
       )
 
-      devices.value = (await get_devices()).result.filter((d)  => d.room?.home?.id === home.value?.id)
+      devices.value = (await get_devices()).result.filter(
+        (d) => d.room?.home?.id === home.value?.id
+      )
       // for (const room of rooms.value) {
       //   try {
       //     devices.value.push(...(await get_room_devices(room.id)).result)
@@ -86,12 +88,15 @@ export const useHomeStore = defineStore('home_data', () => {
       //     break
       //   }
       // }
-
     } catch (e) {
       handleApiError(e, error)
     }
 
     loading.value = false
+  }
+
+  function invalidate() {
+    return setCurrentHome(home.value!.id)
   }
 
   return {
@@ -101,7 +106,8 @@ export const useHomeStore = defineStore('home_data', () => {
     routines,
     loading,
     error,
-    setCurrentHome
+    setCurrentHome,
+    invalidate
   }
 })
 
@@ -147,12 +153,17 @@ export const useRoomStore = defineStore('room_data', () => {
     loading.value = false
   }
 
+  function invalidate() {
+    return setCurrentRoom(room.value!.id)
+  }
+
   return {
     room,
     devices,
     loading,
     error,
-    setCurrentRoom
+    setCurrentRoom,
+    invalidate
   }
 })
 
@@ -191,11 +202,16 @@ export const useDeviceStore = defineStore('device_data', () => {
     loading.value = false
   }
 
+  function invalidate() {
+    return setCurrentDevice(device.value!.id)
+  }
+
   return {
     device,
     loading,
     error,
-    setCurrentDevice
+    setCurrentDevice,
+    invalidate
   }
 })
 

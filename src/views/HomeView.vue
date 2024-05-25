@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import ControllerPlaceholder from '@/components/ControllerPlaceholder.vue'
 import DevicesList from '@/components/DevicesList.vue'
+import AddDevice from '@/components/AddDevice.vue'
 import { change_device_room, delete_device } from '@/api'
-
 import { useRoomStore, useDeviceStore } from '@/stores'
+import { ref, watchEffect } from 'vue'
 
 const roomStore = useRoomStore()
 const deviceStore = useDeviceStore()
@@ -24,7 +25,7 @@ async function changeRoom(room: string) {
   }
 
   // !? :)
-  roomStore.setCurrentRoom(roomStore.room!?.id)
+  roomStore.invalidate()
 }
 
 async function deleteDevice() {
@@ -44,21 +45,47 @@ async function deleteDevice() {
 
   roomStore.setCurrentRoom(roomStore.room!?.id)
 }
+
+const new_device_dialog = ref(false)
+watchEffect(() => {
+  console.log('new_device_dialog', new_device_dialog.value)
+})
 </script>
 
 <template>
-  <main>
-    <!-- <h1>House code: {{ $route.params.home }}<br />Room code: {{ $route.params.room }}</h1> -->
+  <AddDevice
+    :roomId="roomStore.room!.id"
+    v-if="new_device_dialog"
+    @turnoff="new_device_dialog = false"
+  />
+
+  <main v-if="roomStore.room">
     <div class="list">
       <DevicesList />
     </div>
     <div class="separator"></div>
     <div class="controller">
-      <div>
+      <div class="placeholder">
         <ControllerPlaceholder @change_room="changeRoom" @delete="deleteDevice" />
+      </div>
+      <div class="fab">
+        <v-btn
+          rounded
+          height="50"
+          color="white"
+          width="170"
+          @click="new_device_dialog = true"
+          prepend-icon="mdi-plus"
+          size=""
+          text="DISPOSITIVO"
+        />
       </div>
     </div>
   </main>
+  <div v-else class="roomless">
+    <p>This house doesn't have rooms... yet</p>
+    <p>Add the first one in the room picker!</p>
+  </div>
 </template>
 
 <style scoped>
@@ -78,15 +105,23 @@ main {
 
 .controller {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
+  gap: 2rem;
 
   width: 100%;
 }
 
-.controller > div {
+.controller > .placeholder {
   width: 80%;
   height: 80%;
+}
+
+.controller > .fab {
+  width: 90%;
+  display: flex;
+  justify-content: right;
 }
 
 .list {
@@ -94,5 +129,14 @@ main {
   margin-top: 1%;
   justify-content: center;
   align-items: center;
+}
+
+.roomless {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 </style>

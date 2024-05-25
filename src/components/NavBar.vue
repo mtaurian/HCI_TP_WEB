@@ -18,20 +18,28 @@
 
 import { computed, ref, watch, type Ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useAllHousesStore, useHomeStore, useRoomStore, useRoutineStore } from '@/stores'
+import {
+  useAllHousesStore,
+  useHomeStore,
+  useRoomStore,
+  useDeviceStore,
+  useRoutineStore
+} from '@/stores'
 import AddHome from './AddHome.vue'
 import AddRoom from './AddRoom.vue'
-import AddDevice from '@/components/AddDevice.vue'
+
 const router = useRouter()
 const route = useRoute()
 
 const housesStore = useAllHousesStore()
 const homeStore = useHomeStore()
 const roomStore = useRoomStore()
+const deviceStore = useDeviceStore()
+const routineStore = useRoutineStore()
+
 const newHomeDialog = ref(false)
 const newRoomDialog = ref(false)
-const newDeviceDialog = ref(false)
-const routineStore = useRoutineStore()
+
 // This must be only used in the select to set the initial values
 // If you want to get the current value, use route.params.home and route.params.room respectively
 /**
@@ -50,9 +58,6 @@ function openNewHome() {
 function openNewRoom() {
   newRoomDialog.value = true
 }
-function openNewDevice() {
-  newDeviceDialog.value = true
-}
 function closeNewHome() {
   newHomeDialog.value = false
 }
@@ -60,14 +65,15 @@ function closeNewHome() {
 function closeNewRoom() {
   newRoomDialog.value = false
 }
-function closeNewDevice() {
-  newDeviceDialog.value = false
-}
 
 watch(
   [() => route.params.home, () => route.params.room],
   async () => {
     if (['load-dashboard', 'dashboard'].includes(route.name as string)) {
+      homeStore.home = null
+      roomStore.room = null
+      deviceStore.device = null
+
       const { home, room } = (route.params ?? {}) as Record<'home' | 'room', string | undefined>
 
       // https://router.vuejs.org/guide/advanced/data-fetching
@@ -133,6 +139,8 @@ watch(
         return
       }
 
+      initial_home.value = home
+
       // Redirect to the first available room if possible (maybe the house has no rooms)
       if (!room && homeStore.rooms?.length) {
         await router.replace({
@@ -163,11 +171,14 @@ watch(
 
           return
         }
+      } else {
+        roomStore.room = null
       }
 
       initial_room.value = room ?? null
-      initial_home.value = home
     } else if (route.name === 'routines') {
+      routineStore.routine = null
+
       const { home } = (route.params ?? {}) as { home: string | undefined }
 
       // https://router.vuejs.org/guide/advanced/data-fetching
@@ -272,8 +283,7 @@ function goToRoutinesEditor() {
 
 function goToDevices() {
   const home = route.params.home
-  const room = homeStore.rooms[0].id
-  router.push({ name: 'dashboard', params: { home, room } })
+  router.push({ name: 'dashboard', params: { home } })
 }
 </script>
 
@@ -290,11 +300,7 @@ function goToDevices() {
     "
     :homeId="homeStore.home?.id ? homeStore.home?.id : ''"
   />
-  <AddDevice
-    :dialog="newDeviceDialog"
-    :roomId="roomStore.room?.id ? roomStore.room.id : ''"
-    @turnoff="closeNewDevice"
-  />
+
   <v-app-bar app class="bg-background" flat>
     <v-toolbar-title>
       <div class="flex">
@@ -371,19 +377,6 @@ function goToDevices() {
     </template>
     <v-spacer></v-spacer>
   </v-app-bar>
-  <div class="boton_device">
-    <v-btn
-      v-if="!route.fullPath.includes('routines')"
-      rounded
-      height="50"
-      color="white"
-      width="170"
-      @click="openNewDevice"
-      prepend-icon="mdi-plus"
-      size=""
-      text="DISPOSITIVO"
-    ></v-btn>
-  </div>
 </template>
 
 <style scoped>
@@ -412,12 +405,5 @@ function goToDevices() {
 
 .routine-device-button {
   margin-right: 2rem;
-}
-
-.boton_device {
-  position: absolute;
-  bottom: 20px;
-  right: 20px;
-  margin: 0 20px 20px 0;
 }
 </style>

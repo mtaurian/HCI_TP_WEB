@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import { add_device, add_home } from '@/api'
-import { computed, type Ref, ref } from 'vue'
-import { handleApiError } from '@/stores'
+import { add_device, get_devices } from '@/api'
+import { computed, type Ref, ref, onMounted, watch } from 'vue'
+import { handleApiError, useRoomStore, useDeviceStore } from '@/stores'
 import { get_device_types, add_device_to_room } from '@/api'
 
 const deviceTypeSelect = ref('')
-const deviceTypes = ref(await get_device_types()).value.result.map((item) => ({
+const deviceTypes = (await get_device_types()).result.map((item) => ({
   id: item.id,
   name: item.name.toUpperCase()
 }))
+const devicesNames = (await get_devices()).result.map((item) => item.name)
+
 const currentStep = ref(0)
 const deviceName = ref('')
 const loading = ref(false)
@@ -16,10 +18,8 @@ const error: Ref<string | null> = ref(null)
 const paired = ref(false)
 const iconSelected = ref('')
 
-const props = defineProps<{
-  dialog: boolean
-  roomId: string
-}>()
+const roomStore = useRoomStore()
+const deviceStore = useDeviceStore()
 
 const emit = defineEmits<{
   /**
@@ -130,6 +130,7 @@ const icons = [
   'weight-lifter',
   'baby-face-outline'
 ]
+
 function resetValues() {
   deviceTypeSelect.value = ''
   deviceName.value = ''
@@ -139,19 +140,25 @@ function resetValues() {
   paired.value = false
   iconSelected.value = ''
 }
+
 async function submit() {
   loading.value = true
+
   try {
     const newDevice = await add_device(deviceTypeSelect.value, deviceName.value, {
       deviceIcon: iconSelected.value
     })
-    await add_device_to_room(props.roomId, newDevice?.result.id)
+
+    await add_device_to_room(roomStore.room!?.id, newDevice.result.id)
+    await roomStore.invalidate()
+    await deviceStore.setCurrentDevice(newDevice.result.id)
   } catch (e) {
     handleApiError(e, error)
   }
+
   setTimeout(
     () => {
-      emit('turnoff'), resetValues()
+      dialog.value = false
     },
     error.value ? 3000 : 1500
   )
@@ -160,7 +167,8 @@ async function submit() {
 const deviceNameRules = [
   (v: string) => !!v || 'Obligatorio',
   (v: string) => /^[a-zA-Z0-9_ ]*$/.test(v) || 'Caracteres permitidos: a-z, A-Z, 0-9, _ y espacio',
-  (v: string) => (v && v.length >= 3 && v.length <= 60) || 'Debe contener 3-60 caracteres'
+  (v: string) => (v && v.length >= 3 && v.length <= 60) || 'Debe contener 3-60 caracteres',
+  (v: string) => !devicesNames.includes(v) || 'Another device with the same name already exists!'
 ]
 
 const isDeviceNameValid = computed(() => {
@@ -172,12 +180,15 @@ const deviceTypeRules = [(v: any) => !!v || 'Obligatorio']
 const isDeviceTypeValid = computed(() => {
   return deviceTypeRules.every((rule) => rule(deviceTypeSelect.value) === true)
 })
+
 function buscarDispositivo() {
   loading.value = true
   setTimeout(() => {
-    ;(loading.value = false), (paired.value = true)
+    loading.value = false
+    paired.value = true
   }, 3000)
 }
+
 function setIcon() {
   if (deviceTypeSelect.value == deviceTypes[0].id) {
     iconSelected.value = 'mdi-speaker'
@@ -203,6 +214,7 @@ function setIcon() {
     iconSelected.value = 'mdi-icon'
   }
 }
+
 function getNameDevicePaired(): string {
   if (deviceTypeSelect.value == deviceTypes[0].id) {
     return 'JBL-Flip 6'
@@ -231,10 +243,21 @@ function getNameDevicePaired(): string {
 
 const isValidStepDeviceType = computed(() => isDeviceTypeValid.value)
 const isValidStepDeviceName = computed(() => isDeviceNameValid.value)
+
+onMounted(() => {
+  resetValues()
+})
+
+const dialog = ref(true)
+watch(dialog, (value) => {
+  if (!value) {
+    emit('turnoff')
+  }
+})
 </script>
 
 <template>
-  <v-dialog v-model="props.dialog" width="700">
+  <v-dialog v-model="dialog" width="700">
     <v-card>
       <v-stepper-vertical v-model="currentStep" theme="light">
         <v-stepper-vertical-item title="Paso 1" icon="mdi-numeric-1" :complete="currentStep > 0">
@@ -252,6 +275,7 @@ const isValidStepDeviceName = computed(() => isDeviceNameValid.value)
           <template v-slot:next>
             <v-btn :disabled="!isValidStepDeviceType" @click="currentStep++, setIcon()" />
           </template>
+          <template v-slot:prev></template>
         </v-stepper-vertical-item>
         <v-stepper-vertical-item title="Paso 2" icon="mdi-numeric-2" :complete="currentStep > 1">
           <v-card title="Vincular dispositvo" flat>
@@ -261,10 +285,12 @@ const isValidStepDeviceName = computed(() => isDeviceNameValid.value)
                   :loading="loading"
                   :color="loading ? 'primary' : 'white'"
                   @click="buscarDispositivo"
-                  >Buscar</v-btn
+                  v-if="!paired"
                 >
+                  Buscar
+                </v-btn>
                 <v-card
-                  v-if="paired"
+                  v-else
                   append-icon="mdi-check"
                   flat
                   color="green"
@@ -308,7 +334,7 @@ const isValidStepDeviceName = computed(() => isDeviceNameValid.value)
                     {{ deviceName }}
                   </v-btn>
                 </template>
-                <v-list class="my-card">
+                <v-list width="600" height="400" style="overflow-x: hidden !important">
                   <v-row>
                     <v-col v-for="(item, index) in icons" :key="index" cols="3">
                       <v-list-item>
@@ -335,7 +361,7 @@ const isValidStepDeviceName = computed(() => isDeviceNameValid.value)
         </v-stepper-vertical-item>
       </v-stepper-vertical>
       <v-card v-if="error" color="error">{{ error }}</v-card>
-      <v-btn @click="emit('turnoff'), resetValues()">Cancelar</v-btn>
+      <v-btn @click="dialog = false">Cancelar</v-btn>
     </v-card>
   </v-dialog>
 </template>
