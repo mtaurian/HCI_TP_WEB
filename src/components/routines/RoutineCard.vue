@@ -12,7 +12,10 @@ defineEmits<{
 </script>
 
 <template>
-  <v-card :color="isSelected ? 'focus' : ''" @click="$emit('click', routine.id)">
+  <div class="container">
+
+
+  <v-card  min-height="10vh" :color="isSelected ? 'focus' : ''" @click="$emit('click', routine.id)">
     <v-card-item >
       <template v-slot:title>
         <div class="flex">
@@ -27,6 +30,7 @@ defineEmits<{
       </template>
     </v-card-item>
   </v-card>
+  </div>
 </template>
 
 <style scoped>
@@ -39,5 +43,8 @@ defineEmits<{
   justify-content: space-between;
   align-items: center;
   align-content: center;
+}
+.container{
+  margin-right: 0.5rem;
 }
 </style>

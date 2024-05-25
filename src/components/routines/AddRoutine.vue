@@ -20,10 +20,10 @@
           @input="validateForm"
         />
         <div class="actions">
+          <v-btn color="error" class="cancel" @click="() => dialog = true">Cancel</v-btn>
           <div>
             <v-btn class="buttons" color="secondary" :disabled="!isValid" @click="onNext">Next</v-btn>
           </div>
-          <v-btn color="error" class="cancel" @click="() => dialog = true">Cancel</v-btn>
         </div>
       </v-card>
     </template>
@@ -60,27 +60,29 @@
 
             <!-- Columna 3: Elemento que varía según la selección -->
             <v-col cols="12" sm="3" class="column">
-              <DeviceActionsByAction
-                class="select"
-                :device_action-name="rows[index].selectedAction"
-                :device_type_name="rows[index].selectedDevice.type.name"
-                @response="(param) => handleResponce(param, index, 0)"
-                @response2="(param) => handleResponce(param, index, 1)"
-                :key="index"
-              />
+              <div class="action">
+                <DeviceActionsByAction
+                  :device_action-name="rows[index].selectedAction"
+                  :device_type_name="rows[index].selectedDevice.type.name"
+                  @response="(param) => handleResponce(param, index, 0)"
+                  @response2="(param) => handleResponce(param, index, 1)"
+                  :key="index"
+                />
+              </div>
             </v-col>
             <v-fab icon="mdi-arrow-up-thin" size="sm" :disabled="index===0" @click="() => handleUp(index)" color="purple"/>
             <v-fab icon="mdi-arrow-down-thin" size="sm" :disabled="rows.length-1===index" @click="() => handleDown(index)" color="purple"/>
             <v-fab icon="mdi-delete" size="sm" :disabled="rows.length===1" @click="() => handleDelete(index)" color="purple"/>
           </v-row>
         </v-container>
+          <div id="endOfRegion2"/>
         <v-btn class="ma-4" @click="addRow" color="primary">Agregar fila</v-btn>
         <div class="actions">
+          <v-btn color="error" class="cancel" @click="() => dialog = true">Cancel</v-btn>
           <div>
             <v-btn color="white" class="buttons" border @click="onPrevious">Previous</v-btn>
             <v-btn color="secondary" class="buttons" @click="onNext">Next</v-btn>
           </div>
-          <v-btn color="error" class="cancel" @click="() => dialog = true">Cancel</v-btn>
         </div>
       </v-card>
     </template>
@@ -90,11 +92,11 @@
       <p>Are you sure you want to create the "{{routineName}}" routine for  "{{selectedHome?.name}}"?</p>
       <p>Please keep in mind that if the devices you selected have a security pin assigned, this will be requested when executing the routine.</p>
       <div class="actions">
+        <v-btn color="error" class="cancel" @click="() => dialog = true">Cancel</v-btn>
         <div >
         <v-btn class="buttons" color="white" border @click="onPrevious">Previous</v-btn>
         <v-btn class="buttons" color="primary" @click="onSubmit">Confirm</v-btn>
         </div>
-        <v-btn color="error" class="cancel" @click="() => dialog = true">Cancel</v-btn>
       </div>
     </template>
   </v-stepper>
@@ -139,6 +141,7 @@ const routineName = ref('')
 const isValid = ref(false)
 const dialog = ref(false);
 const selectedHome = ref(homeStore.home)
+const routines = (await get_routines()).result.map((r) => r.name)
 
 type rowType = {selectedDevice : Device, selectedAction : string, selectedActionParams : (string | number)[], actions : string[]}
 
@@ -146,9 +149,17 @@ const rows = ref<rowType[]>([
   { selectedDevice: devices[0], selectedAction: '', selectedActionParams : [] ,actions: [''] },
 ])
 
-const addRow = () => {
+const scrollToSection = (sectionId: string) => {
+  const section = document.getElementById(sectionId);
+  if (section) {
+    section.scrollIntoView({ behavior: 'smooth' });
+  }
+};
+
+const addRow = async () => {
   rows.value.push({ selectedDevice: devices[0], selectedAction: '', selectedActionParams :  [], actions: [''] })
-  onUpdateDevice(devices[0], rows.value.length - 1)
+  await onUpdateDevice(devices[0], rows.value.length - 1)
+  scrollToSection('endOfRegion2')
 }
 
 const onNext = () => {
@@ -164,20 +175,12 @@ const handleDelete = (index : number) => {
 
 const rules = [
   (v: string) => v.length <= 60 || 'Up to 60 characters',
-  async (v: string) => {
-    const routines = await get_routines()
-    const isUnique = !routines.result
-      .filter((r) => r.meta.house_id === allHousesStore.homes.find((h) => h.id === selectedHome.value?.id)?.id)
-      .map((r) => r.name)
-      .includes(routineName.value)
-    return isUnique || 'The name is already in use'
-  }
+  (v : string) => !routines.includes(v) || 'The name is already in use',
+  (v: string) => /^[a-zA-Z0-9_ ]*$/.test(v) || 'Caracteres permitidos: a-z, A-Z, 0-9, _ y espacio',
 ]
 
-const validateForm = async () => {
-  const lengthValidation = rules[0](routineName.value)
-  const uniquenessValidation = await rules[1](routineName.value)
-  isValid.value = lengthValidation === true && uniquenessValidation === true && routineName.value.length > 0
+const validateForm =  () => {
+  isValid.value = rules.every((rule) => rule(routineName.value) === true) && routineName.value.length > 0
 }
 
 const onSubmit = () => {
@@ -195,11 +198,13 @@ const onSubmit = () => {
 
   add_routine(routineName.value, theRoutineActions, {house_id : selectedHome.value?.id})
  //TODO un deshacer de la rutinas
+
+  homeStore.invalidate();
   emit('closedOrCanceled')
 }
 
 const handleResponce = (param : string | number | null | undefined, index : number, paramNbr : number) => {
-  if (param){
+  if (param !== null && param !== undefined){
     rows.value[index].selectedActionParams[paramNbr] = param;
   }
   console.log(rows)
@@ -247,7 +252,7 @@ onMounted(() => {
 }
 
 .row {
-  background-color: #dadada;
+  background-color: #e8e8e8;
   align-content: center;
   align-items: center;
   justify-items: center;
@@ -288,5 +293,7 @@ onMounted(() => {
   align-items: center;
 }
 
-
+.action{
+  margin-top: 1.5rem;
+}
 </style>

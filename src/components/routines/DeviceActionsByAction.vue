@@ -5,7 +5,7 @@
     <template v-slot:activator="{ props: activatorProps }">
       <v-btn
         v-bind="activatorProps"
-        color="surface-variant"
+        :color="selectedColor"
         text="Select Color"
         variant="flat"
       ></v-btn>
@@ -15,8 +15,9 @@
         <v-color-picker
           @update:modelValue="onUpdateColor"
           v-model="selectedColor"
+          theme="light"
           mode="rgba" class="colorPicker"/>
-      <v-card class="center">
+      <v-card theme="light" class="center">
         <v-card-actions >
           <v-spacer></v-spacer>
           <v-btn
@@ -27,7 +28,7 @@
           <v-btn
             text="Save"
             color="primary"
-            @click="[onColorPickerSave, isActive.value = false ]"
+            @click="() => {onColorPickerSave(); isActive.value = false }"
           ></v-btn>
         </v-card-actions>
       </v-card>
@@ -41,16 +42,21 @@
   </div>
   <div class="dispense" v-if="props.device_actionName===ActionsEnum.DISPENSE">
     <div class="slider-Group">
-    <p class="text">{{ slider }}</p>
     <v-slider :model-value="slider" :step="1" :min="0" :max="100"
               @update:modelValue="emitResponseSlider"
-    />
+              thumb-label="always"
+    >
+      <template #thumb-label>
+        <p class="text">{{ slider }}</p>
+      </template>
+    </v-slider>
     </div>
     <v-select v-if="props.device_actionName===ActionsEnum.DISPENSE"
               :items="['ml', 'cl', 'dl', 'l', 'dal', 'hl', 'kl']"
               label="Select unit"
-              class="dispense-unit"
-              @update:modelValue="emitResponse2"/>
+              @update:modelValue="(val) => {emitResponse2(val) ; updateSelected(val)}"
+              :model-value="select"
+    />
   </div>
   <div class="slider-Group" v-if="props.device_actionName===ActionsEnum.SETTEMPERATURE">
     <p class="text">{{ slider }}</p>
@@ -58,52 +64,50 @@
               @update:modelValue="emitResponseSlider"/>
   </div>
   <v-select v-if="device_actionName===ActionsEnum.SETHEAT"
-            @update:modelValue="emitResponse"
+            @update:modelValue="(val) => {emitResponse(val) ; updateSelected(val)}"
+            :model-value="select"
             label="Select heat"
             :items="[ 'conventional', 'bottom', 'top']"
-            class="select"
   />
   <v-select v-if="device_actionName===ActionsEnum.SETMODE"
-            @update:modelValue="emitResponse"
+            @update:modelValue="(val) => {emitResponse(val) ; updateSelected(val)}"
+            :model-value="select"
             label="Select Mode"
             :items="device_type_name==='vacuum' ? ['vacuum', 'mop'] : (device_type_name === 'refrigerator') ? [ 'cool', 'heat', 'fan'] : ['default', 'vacation', 'party']"
-            class="select"
   />
   <v-select v-if="device_actionName===ActionsEnum.SETVERTICALSWING"
-            @update:modelValue="emitResponse"
+            @update:modelValue="(val) => {emitResponse(val) ; updateSelected(val)}"
+            :model-value="select"
             label="Select Vertical Swing"
             :items="[ 'auto', '22', '45', '67', '90']"
-            class="select"
   />
   <v-select v-if="device_actionName===ActionsEnum.SETHORIZONTALS"
-            @update:modelValue="emitResponse"
+            @update:modelValue="(val) => {emitResponse(val) ; updateSelected(val)}"
+            :model-value="select"
             label="Select Horizontals"
             :items="[ 'auto', '-90', '-45', '0', '45', '90']"
-            class="select"
   />
   <v-select v-if="device_actionName===ActionsEnum.SETFANSPEED"
-            @update:modelValue="emitResponse"
+            @update:modelValue="(val) => {emitResponse(val) ; updateSelected(val)}"
+            :model-value="select"
             label="Select Convection"
             :items="[ 'auto', '25', '50', '75', '100']"
-            class="select"
   />
   <v-text-field v-if="device_actionName===ActionsEnum.CHANGESECURITYCODE"
             @update:modelValue="emitResponse"
             label="New Code"
-            class="select"
   />
   <v-select v-if="device_actionName===ActionsEnum.SETLOCATION"
-            @update:modelValue="emitResponse"
+            @update:modelValue="(val) => {emitResponse(val) ; updateSelected(val)}"
+            :model-value="select"
             label="Working Location"
             :items="homeStore.rooms"
             :item-value="item => item.id"
             :item-title="item => item.name"
-            class="select"
   />
   <v-number-input v-if="device_actionName===ActionsEnum.SETFREEZERTEMPERATURE"
                   @update:modelValue="emitResponse"
                   label="Temperature"
-                  class="select"
   />
 </template>
 
@@ -115,16 +119,33 @@ import { useHomeStore } from '@/stores'
 
 const props = defineProps<{
   device_actionName: string,
-  device_type_name : string
+  device_type_name : string,
+  theParams? :( number | string)[]
 }>()
 
 const emit = defineEmits(['response', 'response2']);
 const homeStore = useHomeStore()
-const selectedColor = ref('FFFFFF')
-const slider = ref(0)
+
+const selectedColor = ref(
+  (props.theParams
+    && props.theParams.length > 0
+  ) ? ((typeof props.theParams[0] == 'string') ? props.theParams[0] : ((props.theParams.length > 1 && typeof props.theParams[1] == 'string') ? props.theParams[1] : 'FFFFFF')) : 'FFFFFF')
+
+const select = ref(
+  (props.theParams
+    && props.theParams.length > 0
+  ) ? ((typeof props.theParams[0] == 'string') ? props.theParams[0] : ((props.theParams.length > 1 && typeof props.theParams[1] == 'string') ? props.theParams[1] : '')) : '')
+
+const updateSelected = (val : string) => {
+  select.value = val;
+}
+const slider = ref((props.theParams
+  && props.theParams.length > 0
+  ) ? ((typeof props.theParams[0] == 'number') ? props.theParams[0] : ((props.theParams.length > 1 && typeof props.theParams[1] == 'number') ? props.theParams[1] : 0)) : 0)
 
 const onColorPickerSave = () => {
-  emit("response", selectedColor.value)
+  emit("response", selectedColor.value.slice(1))
+  console.log(selectedColor.value)
 }
 
 const onUpdateColor = (color : string) => {
@@ -132,19 +153,17 @@ const onUpdateColor = (color : string) => {
 }
 
 const emitResponse = (rta : string | number |  null)=>{
-  console.log(rta)
-  if(!rta) return
+  if(rta===null) return
   emit("response", rta)
 }
 
 const emitResponseSlider = (rta : number )=>{
-  console.log("tttt" + rta)
   slider.value = rta;
   emit("response", rta)
 }
 
 const emitResponse2 = (rta : string | number |  null)=>{
-  if(!rta) return
+  if(rta===null) return
   emit("response2", rta)
 }
 

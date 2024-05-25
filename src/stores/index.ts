@@ -80,14 +80,7 @@ export const useHomeStore = defineStore('home_data', () => {
       devices.value = (await get_devices()).result.filter(
         (d) => d.room?.home?.id === home.value?.id
       )
-      // for (const room of rooms.value) {
-      //   try {
-      //     devices.value.push(...(await get_room_devices(room.id)).result)
-      //   } catch (e) {
-      //     handleApiError(e, error)
-      //     break
-      //   }
-      // }
+
     } catch (e) {
       handleApiError(e, error)
     }
@@ -229,7 +222,7 @@ export const useRoutineStore = defineStore('routine_data', () => {
     } catch (e) {
       handleApiError(e, error)
     }
-
+    console.log(routine.value)
     loading.value = false
   }
 

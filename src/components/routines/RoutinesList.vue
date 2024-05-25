@@ -35,6 +35,8 @@ watch(
   display: flex;
   flex-direction: column;
   gap: 20px;
+  max-height: 80vh;
   border-radius: 10px;
+  overflow-y: auto;
 }
 </style>
