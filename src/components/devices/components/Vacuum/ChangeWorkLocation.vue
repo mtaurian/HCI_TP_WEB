@@ -50,12 +50,12 @@ const props = defineProps<{
   state : ApiState
 }>()
 
-const currentLocation = computed(() => props.state.result.location as Locaction);
-const selectedLocation = ref(currentLocation.value.name)
+const currentLocation = computed(() => props.state.result.location as Locaction | null);
+const selectedLocation = ref(currentLocation.value?.name ?? null)
 const message = computed(() => 'Vacuum working location will be set to: ' + selectedLocation.value)
 
 const onCancel = async () => {
-  selectedLocation.value = currentLocation.value.name;
+  selectedLocation.value = currentLocation.value?.name ?? null;
   dialog.value = false;
 }
 

@@ -1,27 +1,10 @@
 <script setup lang="ts">
-/**
- * This file needs a little clarification in respect to its scope:
- *
- * The component receives the device's data (name, id, type, room),
- * and renders the corresponding controller for the device, plus two
- * buttons: change room and delete device.
- *
- * Any interaction with this buttons is handled by the parent component.
- * Meanwhile, any interaction with the controller is handled by the
- * controller itself (the child).
- *
- * I think this manages to get the best of both worlds: the parent
- * handles generic actions, while the child handles specific actions.
- */
 
 import { useHomeStore, useRoutineStore } from '@/stores'
-import { onMounted } from 'vue'
 
 const routineStore = useRoutineStore();
 const homeStore = useHomeStore();
 
-defineEmits<{
-}>()
 
 </script>
 
@@ -31,7 +14,6 @@ defineEmits<{
         <h2>{{ routineStore.routine.name }}</h2>
       </div>
       <div class="controller">
-        <!-- Component picking here -->
       </div>
 
       <div class="actions">
@@ -49,7 +31,7 @@ defineEmits<{
   </div>
   <div v-else>
     <p>
-      ¡No hay dispositivo seleccionado! Tal vez una foto acá para decirle cómo agregar un
+      ¡No hay rutina seleccionada! Tal vez una foto acá para decirle cómo agregar un
       dispositivo
     </p>
   </div>

@@ -47,7 +47,7 @@ const change_room_value = ref(undefined as string | undefined)
     <div class="name">
       <h2>{{ deviceStore.device.name }}</h2>
     </div>
-    <div class="controller">
+    <div class="controller" :key="deviceStore.device.id">
       <!-- Component picking here -->
       <p v-if="deviceStore.device.type.name === 'aire'">Aire</p>
       <LampController

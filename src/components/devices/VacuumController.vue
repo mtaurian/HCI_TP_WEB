@@ -2,15 +2,15 @@
 <template>
   <div>
     <div class="header">
-      <PowerButton class="power" v-if="state" :device_id="props.device_id" :state="state" @power-changed="updateDeviceState" />
-      <BackToHomeButton class="dock" v-if="state" :device_id="props.device_id" :state="state" @dock-changed="updateDeviceState"/>
+      <PowerButton  v-if="state" :device_id="props.device_id" :state="state" @power-changed="updateDeviceState" />
+      <BackToHomeButton  v-if="state" :device_id="props.device_id" :state="state" @dock-changed="updateDeviceState"/>
     </div>
     <div>
-      <SelectMode class="select" v-if="state" :device_id="props.device_id" @mode-changed="updateDeviceState" :state="state"/>
-      <ChangeWorkLocation class="select" v-if="state" :device_id="props.device_id" @working-location-changed="updateDeviceState" :state="state"/>
+      <SelectMode  v-if="state" :device_id="props.device_id" @mode-changed="updateDeviceState" :state="state"/>
+      <ChangeWorkLocation  v-if="state" :device_id="props.device_id" @working-location-changed="updateDeviceState" :state="state"/>
     </div>
     <div>
-      <ProgressBar class="progressBar" v-if="state" :device_id="props.device_id" :state="state"/>
+      <ProgressBar v-if="state" :device_id="props.device_id" :state="state"/>
     </div>
   </div>
 </template>
@@ -53,24 +53,5 @@ onMounted(async () => {
   justify-items: center;
 }
 
-.power{
-  margin-right: 2rem;
-  align-items: center;
-}
 
-.dock{
-  margin-right: 10px;
-  align-items: center;
-  justify-content: center;
-  align-content: center;
-  justify-items: center;
-
-}
-
-.select{
-  margin-bottom: 0.5rem;
-}
-.progressBar{
-  margin-top: 1rem;
-}
 </style>

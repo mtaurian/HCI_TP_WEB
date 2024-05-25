@@ -28,13 +28,13 @@ export type ApiReturns = string | number | boolean | ApiSong[] | Location | null
 export type ApiEvent = Record<string, string | number | ApiSong>
 export type ApiState = { result: Record<string, ApiReturns> }
 
-interface ApiVariable<Example, Type extends string> {
+export interface ApiVariable<Example, Type extends string> {
   type: Type
   description: string
   example: Example
 }
 
-interface ApiArgument extends ApiVariable<ApiParams, 'string' | 'number'> {
+export interface ApiArgument extends ApiVariable<ApiParams, 'string' | 'number'> {
   name: string
   minValue?: ApiParams
   maxValue?: ApiParams
@@ -99,6 +99,12 @@ export interface ApiAction {
   meta: ApiMeta
 }
 
+export interface ApiActionToPost{
+  device : {id : string},
+  actionName : string,
+  params: ApiParams[]
+  meta: ApiMeta
+}
 export interface Routine extends ApiEntry {
   actions: ApiAction[]
 }
@@ -238,7 +244,7 @@ export async function get_device(id: string): ApiResponse<Device> {
  * @param meta The new device metadata
  * @returns Whether the update was successful
  */
-export async function update_device(id: string, name: string, meta: ApiMeta): ApiResponse<boolean> {
+      export async function update_device(id: string, name: string, meta: ApiMeta): ApiResponse<boolean> {
   const res = await fetch(`${BASE_URL}/devices/${id}`, {
     method: 'PUT',
     headers: {

@@ -11,6 +11,7 @@ import {
   get_routine,
   listen_all_events,
   listen_device_events,
+  get_devices,
   type ApiError,
   type ApiReturns
 } from '@/api'
@@ -59,8 +60,8 @@ export const useAllHousesStore = defineStore('houses_data', () => {
 export const useHomeStore = defineStore('home_data', () => {
   const home: Ref<Awaited<ReturnType<typeof get_home>>['result'] | null> = ref(null)
   const rooms: Ref<Awaited<ReturnType<typeof get_home_rooms>>['result']> = ref([])
-  const devices: Ref<Awaited<ReturnType<typeof get_room_devices>>['result']> = ref([])
-  const routines: Ref<Awaited<ReturnType<typeof get_routines>>['result']> = ref([])
+  const devices: Ref<Awaited<ReturnType<typeof get_devices>>['result']> = ref([])
+  const routines: Ref<Awaited<ReturnType<typeof get_routines>>['result']> = ref([]);
 
   const loading = ref(false)
   const error: Ref<string | null> = ref(null)
@@ -76,15 +77,16 @@ export const useHomeStore = defineStore('home_data', () => {
         (r) => 'house_id' in r.meta && home.value?.id === r.meta.house_id
       )
 
-      devices.value = []
-      for (const room of rooms.value) {
-        try {
-          devices.value.push(...(await get_room_devices(room.id)).result)
-        } catch (e) {
-          handleApiError(e, error)
-          break
-        }
-      }
+      devices.value = (await get_devices()).result.filter((d)  => d.room?.home?.id === home.value?.id)
+      // for (const room of rooms.value) {
+      //   try {
+      //     devices.value.push(...(await get_room_devices(room.id)).result)
+      //   } catch (e) {
+      //     handleApiError(e, error)
+      //     break
+      //   }
+      // }
+
     } catch (e) {
       handleApiError(e, error)
     }
