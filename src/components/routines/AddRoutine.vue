@@ -1,3 +1,5 @@
+<!-- eslint-disable vue/valid-v-slot -->
+
 <template>
   <v-stepper  class="stepper" max-width="70rem" theme="light" :items="steps" hide-actions v-model="currentStep">
     <template v-slot:item.1>
