@@ -4,7 +4,7 @@ import DevicesList from '@/components/DevicesList.vue'
 import AddDevice from '@/components/AddDevice.vue'
 import { change_device_room, delete_device } from '@/api'
 import { useRoomStore, useDeviceStore } from '@/stores'
-import { ref, watchEffect } from 'vue'
+import { ref } from 'vue'
 
 const roomStore = useRoomStore()
 const deviceStore = useDeviceStore()
