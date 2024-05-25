@@ -47,17 +47,15 @@ async function deleteDevice() {
 }
 
 const new_device_dialog = ref(false)
-watchEffect(() => {
-  console.log('new_device_dialog', new_device_dialog.value)
-})
+function closeDialog() {
+  setTimeout(() => {
+    new_device_dialog.value = false
+  }, 500)
+}
 </script>
 
 <template>
-  <AddDevice
-    :roomId="roomStore.room!.id"
-    v-if="new_device_dialog"
-    @turnoff="new_device_dialog = false"
-  />
+  <AddDevice v-if="new_device_dialog" @turnoff="closeDialog" />
 
   <main v-if="roomStore.room">
     <div class="list">
