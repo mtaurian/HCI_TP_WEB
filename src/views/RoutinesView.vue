@@ -22,7 +22,7 @@
   </main>
 
 
-  <v-fab class="v-fab" @click="onAddRoutine" size="x-large" extended prepend-icon="mdi-plus" text="Rutina"></v-fab>
+  <v-fab class="v-fab" @click="onAddRoutine" size="x-large" extended color="white" prepend-icon="mdi-plus" text="Rutina"></v-fab>
 </template>
 
 

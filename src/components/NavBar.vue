@@ -373,6 +373,7 @@ function goToDevices() {
   </v-app-bar>
   <div class="boton_device">
     <v-btn
+      v-if="!route.fullPath.includes('routines')"
       rounded
       height="50"
       color="white"
