@@ -12,12 +12,7 @@ const router = createRouter({
       component: LandingView
     },
     {
-      path: '/dashboard/routines',
-      name: 'routines',
-      component: RoutinesView
-    },
-    {
-      path: '/dashboard/routines/:home',
+      path: '/dashboard/routines/:home?',
       name: 'routines',
       component: RoutinesView
     },
@@ -34,7 +29,7 @@ const router = createRouter({
     {
       path: '/:pathMatch(.*)*',
       name: 'NotFound',
-      component: () => import('../views/AboutView.vue')
+      component: () => import('../views/NotFound.vue')
     }
   ]
 })

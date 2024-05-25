@@ -2,11 +2,15 @@ import 'vuetify/styles'
 import '@mdi/font/css/materialdesignicons.css'
 
 import * as components from 'vuetify/components'
+import * as labsComponents from 'vuetify/labs/components'
 import * as directives from 'vuetify/directives'
 import { createVuetify } from 'vuetify'
 
 const vuetify = createVuetify({
-  components,
+  components: {
+    ...components,
+    ...labsComponents
+  },
   directives,
   theme: {
     defaultTheme: 'dark',
