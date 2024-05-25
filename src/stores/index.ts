@@ -80,7 +80,6 @@ export const useHomeStore = defineStore('home_data', () => {
       devices.value = (await get_devices()).result.filter(
         (d) => d.room?.home?.id === home.value?.id
       )
-
     } catch (e) {
       handleApiError(e, error)
     }
@@ -234,10 +233,36 @@ export const useRoutineStore = defineStore('routine_data', () => {
   }
 })
 
+export const usePinStore = defineStore('pin_store', () => {
+  const pin: Ref<string | null> = ref(null)
+  const homeId: Ref<string | null> = ref(null)
+
+  function set(id: string, value: string | null) {
+    homeId.value = id
+    pin.value = value
+  }
+
+  function validate(value: string) {
+    if (!pin.value) return true
+    if (pin.value !== value) return false
+
+    pin.value = null
+    return true
+  }
+
+  return {
+    homeId,
+    pin,
+    set,
+    validate
+  }
+})
+
 if (import.meta.hot) {
   import.meta.hot.accept(acceptHMRUpdate(useAllHousesStore, import.meta.hot))
   import.meta.hot.accept(acceptHMRUpdate(useHomeStore, import.meta.hot))
   import.meta.hot.accept(acceptHMRUpdate(useRoomStore, import.meta.hot))
   import.meta.hot.accept(acceptHMRUpdate(useDeviceStore, import.meta.hot))
   import.meta.hot.accept(acceptHMRUpdate(useRoutineStore, import.meta.hot))
+  import.meta.hot.accept(acceptHMRUpdate(usePinStore, import.meta.hot))
 }

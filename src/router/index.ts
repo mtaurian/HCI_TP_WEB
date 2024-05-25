@@ -12,9 +12,9 @@ const router = createRouter({
       component: LandingView
     },
     {
-      path: '/dashboard/routines/:home?',
-      name: 'routines',
-      component: RoutinesView
+      path: '/pin/:pathMatch(.+)*',
+      name: 'pin',
+      component: () => import('../views/PinView.vue')
     },
     {
       path: '/dashboard/:home?',
@@ -25,6 +25,11 @@ const router = createRouter({
       path: '/dashboard/:home?/room/:room?',
       name: 'dashboard',
       component: HomeView
+    },
+    {
+      path: '/dashboard/:home?/routines',
+      name: 'routines',
+      component: RoutinesView
     },
     {
       path: '/:pathMatch(.*)*',

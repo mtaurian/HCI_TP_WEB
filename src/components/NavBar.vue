@@ -23,7 +23,8 @@ import {
   useHomeStore,
   useRoomStore,
   useDeviceStore,
-  useRoutineStore
+  useRoutineStore,
+  usePinStore
 } from '@/stores'
 import AddHome from './AddHome.vue'
 import AddRoom from './AddRoom.vue'
@@ -36,6 +37,7 @@ const homeStore = useHomeStore()
 const roomStore = useRoomStore()
 const deviceStore = useDeviceStore()
 const routineStore = useRoutineStore()
+const pinStore = usePinStore()
 
 const newHomeDialog = ref(false)
 const newRoomDialog = ref(false)
@@ -77,6 +79,7 @@ watch(
       homeStore.home = null
       roomStore.room = null
       deviceStore.device = null
+      routineStore.routine = null
 
       const { home, room } = (route.params ?? {}) as Record<'home' | 'room', string | undefined>
 
@@ -145,6 +148,20 @@ watch(
 
       initial_home.value = home
 
+      if (pinStore.homeId !== home) {
+        if (homeStore.home!.meta?.houseCode) {
+          pinStore.set(homeStore.home!.id, homeStore.home!.meta.houseCode as string)
+
+          await router.replace({
+            path: `/pin${route.fullPath}`
+          })
+
+          return
+        } else {
+          pinStore.set(home, null)
+        }
+      }
+
       // Redirect to the first available room if possible (maybe the house has no rooms)
       if (!room && homeStore.rooms?.length) {
         await router.replace({
@@ -181,6 +198,9 @@ watch(
 
       initial_room.value = room ?? null
     } else if (route.name === 'routines') {
+      homeStore.home = null
+      roomStore.room = null
+      deviceStore.device = null
       routineStore.routine = null
 
       const { home } = (route.params ?? {}) as { home: string | undefined }
@@ -292,7 +312,7 @@ function goToDevices() {
 </script>
 
 <template>
-  <AddHome @turnoff="closeNewHome"  v-if="newHomeDialog" />
+  <AddHome @turnoff="closeNewHome" v-if="newHomeDialog" />
   <AddRoom
     @turnoff="closeNewRoom"
     :code="
