@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { add_device, add_home } from '@/api'
 import { computed, type Ref, ref } from 'vue'
-import { VStepperVertical, VStepperVerticalItem } from 'vuetify/lib/labs/components.mjs';
 import { handleApiError } from '@/stores'
 import { get_device_types, add_device_to_room } from '@/api'
 

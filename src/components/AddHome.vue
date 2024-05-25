@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { add_home } from '@/api'
 import { computed, type Ref, ref } from 'vue'
-import { VStepperVertical, VStepperVerticalItem } from 'vuetify/lib/labs/components.mjs'
 import { handleApiError } from '@/stores'
 
 const isSwitchOn = ref(true)

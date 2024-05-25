@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { VStepperVertical, VStepperVerticalItem } from 'vuetify/lib/labs/components.mjs'
 import { ref, computed, type Ref } from 'vue'
 import { add_room, add_room_to_home, type ApiError, type ApiMeta } from '@/api'
 import { handleApiError } from '@/stores'
