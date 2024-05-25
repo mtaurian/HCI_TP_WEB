@@ -31,12 +31,12 @@
     <template v-slot:item.2>
       <v-card title="Configuration"  flat>
         <v-container class="container">
-          <v-row class="row" v-for="(row, index) in rows" :key="index" no-gutters>
+          <v-row class="row" v-for="(row, index) in rows" :key="row.id" no-gutters>
             <!-- Columna 1: Select para elegir dispositivos -->
             <v-col cols="12" sm="3" class="column">
               <v-select
                 class="item"
-                v-model="rows[index].selectedDevice"
+                v-model="row.selectedDevice"
                 :items="devices"
                 :item-value="item => item"
                 :item-title="item => item.name + ' (' + item.room?.name + ')'"
@@ -50,8 +50,8 @@
             <v-col cols="12" sm="3" class="column">
               <v-select
                 class="item"
-                v-model="rows[index].selectedAction"
-                :items="rows[index].actions"
+                v-model="row.selectedAction"
+                :items="row.actions"
                 @update:modelValue="value => onUpdateAction(value, index)"
                 label="Select an action"
                 outlined
@@ -62,11 +62,10 @@
             <v-col cols="12" sm="3" class="column">
               <div class="action">
                 <DeviceActionsByAction
-                  :device_action-name="rows[index].selectedAction"
-                  :device_type_name="rows[index].selectedDevice.type.name"
+                  :device_action-name="row.selectedAction"
+                  :device_type_name="row.selectedDevice.type.name"
                   @response="(param) => handleResponce(param, index, 0)"
                   @response2="(param) => handleResponce(param, index, 1)"
-                  :key="index"
                 />
               </div>
             </v-col>
@@ -76,7 +75,7 @@
           </v-row>
         </v-container>
           <div id="endOfRegion2"/>
-        <v-btn class="ma-4" @click="addRow" color="primary">Agregar fila</v-btn>
+        <v-btn class="ma-4" @click="addRow" color="primary">Add Action</v-btn>
         <div class="actions">
           <v-btn color="error" class="cancel" @click="() => dialog = true">Cancel</v-btn>
           <div>
@@ -143,10 +142,10 @@ const dialog = ref(false);
 const selectedHome = ref(homeStore.home)
 const routines = (await get_routines()).result.map((r) => r.name)
 
-type rowType = {selectedDevice : Device, selectedAction : string, selectedActionParams : (string | number)[], actions : string[]}
+type rowType = {selectedDevice : Device, selectedAction : string, selectedActionParams : (string | number)[], actions : string[], id : number}
 
 const rows = ref<rowType[]>([
-  { selectedDevice: devices[0], selectedAction: '', selectedActionParams : [] ,actions: [''] },
+  { selectedDevice: devices[0], selectedAction: '', selectedActionParams : [] ,actions: [''] , id : Date.now()},
 ])
 
 const scrollToSection = (sectionId: string) => {
@@ -157,7 +156,7 @@ const scrollToSection = (sectionId: string) => {
 };
 
 const addRow = async () => {
-  rows.value.push({ selectedDevice: devices[0], selectedAction: '', selectedActionParams :  [], actions: [''] })
+  rows.value.push({ selectedDevice: devices[0], selectedAction: '', selectedActionParams :  [], actions: [''] , id : Date.now()})
   await onUpdateDevice(devices[0], rows.value.length - 1)
   scrollToSection('endOfRegion2')
 }

@@ -212,6 +212,10 @@ export const useRoutineStore = defineStore('routine_data', () => {
   const loading = ref(false)
   const error: Ref<string | null> = ref(null)
 
+  function invalidate() {
+    return setCurrentRoutine(routine.value!.id)
+  }
+
   async function setCurrentRoutine(id: string) {
     loading.value = true
     error.value = null
@@ -229,7 +233,8 @@ export const useRoutineStore = defineStore('routine_data', () => {
     routine,
     loading,
     error,
-    setCurrentRoutine
+    setCurrentRoutine,
+    invalidate
   }
 })
 

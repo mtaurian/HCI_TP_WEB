@@ -5,9 +5,10 @@
     <template v-slot:activator="{ props: activatorProps }">
       <v-btn
         v-bind="activatorProps"
-        :color="selectedColor"
+        :color="selectedColor.startsWith('#') ? selectedColor : '#' + selectedColor"
         text="Select Color"
         variant="flat"
+        @click="() => oldColor = selectedColor"
       ></v-btn>
     </template>
 
@@ -23,7 +24,7 @@
           <v-btn
             text="Cancel"
             color="error"
-            @click="isActive.value = false"
+            @click="() => {isActive.value = false; selectedColor = oldColor}"
           ></v-btn>
           <v-btn
             text="Save"
@@ -36,9 +37,14 @@
   </v-dialog>
   <div class="slider-Group" v-if="props.device_actionName===ActionsEnum.SETBRIGHTNESS
   || props.device_actionName===ActionsEnum.SETLEVEL">
-    <p class="text">{{ slider }}</p>
     <v-slider :min="0" :max="100" :step="1"
-              @update:modelValue="emitResponseSlider"/>
+              @update:modelValue="emitResponseSlider" thumb-label="always"
+              :model-value="slider"
+    >
+      <template #thumb-label>
+        <p class="text">{{ slider }}</p>
+      </template>
+    </v-slider>
   </div>
   <div class="dispense" v-if="props.device_actionName===ActionsEnum.DISPENSE">
     <div class="slider-Group">
@@ -59,9 +65,14 @@
     />
   </div>
   <div class="slider-Group" v-if="props.device_actionName===ActionsEnum.SETTEMPERATURE">
-    <p class="text">{{ slider }}</p>
     <v-slider :min="props.device_type_name === 'ac' ? 18 : 90" :max="props.device_type_name === 'ac' ? 38 : 230" :step="1"
-              @update:modelValue="emitResponseSlider"/>
+              @update:modelValue="emitResponseSlider" thumb-label="always"
+              :model-value="slider"
+    >
+      <template #thumb-label>
+        <p class="text">{{ slider }}</p>
+      </template>
+    </v-slider>
   </div>
   <v-select v-if="device_actionName===ActionsEnum.SETHEAT"
             @update:modelValue="(val) => {emitResponse(val) ; updateSelected(val)}"
@@ -107,6 +118,7 @@
   />
   <v-number-input v-if="device_actionName===ActionsEnum.SETFREEZERTEMPERATURE"
                   @update:modelValue="emitResponse"
+                  :model-value="tempRefriVal"
                   label="Temperature"
   />
 </template>
@@ -114,7 +126,7 @@
 
 <script setup lang="ts">
 
-import { ref } from 'vue'
+import { onMounted, ref, watchEffect } from 'vue'
 import { useHomeStore } from '@/stores'
 
 const props = defineProps<{
@@ -124,12 +136,35 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits(['response', 'response2']);
+
+watchEffect(() => {
+  console.log("props: ", props.theParams)
+  if (!props.theParams){
+    const action = props.device_actionName
+    if (action === ActionsEnum.SETBRIGHTNESS ||
+        action === ActionsEnum.SETLEVEL ||
+        action === ActionsEnum.DISPENSE
+    ) {
+      emit('response', 0);
+    }
+    else if ( action === ActionsEnum.SETTEMPERATURE && props.device_type_name === 'ac'){
+      emit('response', 18);
+    } else if (action === ActionsEnum.SETTEMPERATURE){
+      emit('response', 90);
+    } else if (action === ActionsEnum.SETCOLOR){
+      emit('response', 'FFFFFF');
+    }
+  }
+}, )
+
 const homeStore = useHomeStore()
 
 const selectedColor = ref(
   (props.theParams
     && props.theParams.length > 0
   ) ? ((typeof props.theParams[0] == 'string') ? props.theParams[0] : ((props.theParams.length > 1 && typeof props.theParams[1] == 'string') ? props.theParams[1] : 'FFFFFF')) : 'FFFFFF')
+
+const oldColor = ref('')
 
 const select = ref(
   (props.theParams
@@ -156,6 +191,9 @@ const emitResponse = (rta : string | number |  null)=>{
   if(rta===null) return
   emit("response", rta)
 }
+const tempRefriVal =  ref((props.theParams
+  && props.theParams.length > 0
+) ? ((typeof props.theParams[0] == 'number') ? props.theParams[0] : ((props.theParams.length > 1 && typeof props.theParams[1] == 'number') ? props.theParams[1] : 0)) : 0)
 
 const emitResponseSlider = (rta : number )=>{
   slider.value = rta;
