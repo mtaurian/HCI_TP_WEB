@@ -2,17 +2,36 @@
 import ControllerPlaceholder from '@/components/ControllerPlaceholder.vue'
 import DevicesList from '@/components/DevicesList.vue'
 import AddDevice from '@/components/AddDevice.vue'
-import { change_device_room, delete_device } from '@/api'
+import { update_device, change_device_room, delete_device } from '@/api'
 import { useRoomStore, useDeviceStore } from '@/stores'
 import { ref } from 'vue'
 
 const roomStore = useRoomStore()
 const deviceStore = useDeviceStore()
 
+async function changeName(name: string) {
+  if (!deviceStore.device) return
+
+  try {
+    if (!(await update_device(deviceStore.device.id, name, deviceStore.device.meta)).result) {
+      alert('No se pudo cambiar el nombre del dispositivo')
+      return
+    }
+  } catch (error) {
+    alert('No se pudo cambiar el nombre del dispositivo')
+  }
+
+  deviceStore.invalidate()
+  roomStore.invalidate()
+}
+
 async function changeRoom(room: string) {
   if (!deviceStore.device) return
 
-  const confirmation = confirm(`¿Estás seguro de que deseas mover este dispositivo?`)
+  const confirmation = confirm(
+    `¿Estás seguro de que deseas mover el dispositivo ${deviceStore.device.name}?`
+  )
+
   if (!confirmation) return
 
   try {
@@ -24,7 +43,6 @@ async function changeRoom(room: string) {
     alert('No se pudo cambiar el dispositivo de habitación')
   }
 
-  // !? :)
   roomStore.invalidate()
 }
 
@@ -43,7 +61,7 @@ async function deleteDevice() {
     alert('No se pudo eliminar el dispositivo')
   }
 
-  roomStore.setCurrentRoom(roomStore.room!?.id)
+  roomStore.invalidate()
 }
 
 const new_device_dialog = ref(false)
@@ -64,7 +82,11 @@ function closeDialog() {
     <div class="separator"></div>
     <div class="controller">
       <div class="placeholder">
-        <ControllerPlaceholder @change_room="changeRoom" @delete="deleteDevice" />
+        <ControllerPlaceholder
+          @change_name="changeName"
+          @change_room="changeRoom"
+          @delete="deleteDevice"
+        />
       </div>
       <div class="fab">
         <v-btn

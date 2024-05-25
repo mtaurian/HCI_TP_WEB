@@ -15,7 +15,7 @@
  */
 
 import { useHomeStore, useRoomStore, useDeviceStore } from '@/stores'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import BlindController from '@/components/devices/BlindController.vue'
 import FaucetController from '@/components/devices/FaucetController.vue'
 import LampController from '@/components/devices/LampController.vue'
@@ -26,6 +26,12 @@ const roomStore = useRoomStore()
 const deviceStore = useDeviceStore()
 
 defineEmits<{
+  /**
+   * Emits an event to change the name of the device
+   *
+   * @param name The new name of the device
+   */
+  change_name: [string]
   /**
    * Emits an event to change the room of the device
    *
@@ -39,13 +45,46 @@ defineEmits<{
 }>()
 
 const change_room_value = ref(undefined as string | undefined)
+
+const changing_name = ref(false)
+const new_name = ref(deviceStore.device?.name ?? '')
+// Works like a onMounted
+watch(
+  () => deviceStore.device,
+  () => {
+    changing_name.value = false
+    new_name.value = deviceStore.device?.name ?? ''
+  }
+)
 </script>
 
 <template>
   <div v-if="deviceStore.device" class="black-square">
-    <div class="name">
+    <div class="name" v-if="!changing_name">
       <h2>{{ deviceStore.device.name }}</h2>
+      <v-btn variant="text" @click="changing_name = true">
+        <template #prepend>
+          <v-icon>mdi-pencil</v-icon>
+        </template>
+        Change name
+      </v-btn>
     </div>
+    <div class="change-name" v-else>
+      <v-text-field
+        v-model="new_name"
+        @keydown.enter="(changing_name = false), $emit('change_name', new_name)"
+        @keydown.esc="changing_name = false"
+        variant="underlined"
+        label="New name"
+      ></v-text-field>
+      <v-btn @click="(changing_name = false), $emit('change_name', new_name)" variant="flat">
+        <v-icon>mdi-check</v-icon>
+      </v-btn>
+      <v-btn @click="changing_name = false" variant="text">
+        <v-icon>mdi-close</v-icon>
+      </v-btn>
+    </div>
+
     <div class="controller" :key="deviceStore.device.id">
       <!-- Component picking here -->
       <p v-if="deviceStore.device.type.name === 'aire'">Aire</p>
@@ -96,7 +135,7 @@ const change_room_value = ref(undefined as string | undefined)
         ></v-select>
       </div>
       <div class="button">
-        <v-btn @click="$emit('delete')" color="error">
+        <v-btn @click="$emit('delete')" color="tonal">
           <template #prepend>
             <v-icon>mdi-delete</v-icon>
           </template>
@@ -118,12 +157,25 @@ const change_room_value = ref(undefined as string | undefined)
   width: 100%;
   height: 100%;
   padding: 2.2rem 3rem;
+  border-radius: 0.3rem;
 
   background-color: #4a4458;
 
   display: grid;
   align-items: center;
   grid-template-rows: 10% 1fr 20%;
+}
+
+.name {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.change-name {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
 }
 
 .controller,
