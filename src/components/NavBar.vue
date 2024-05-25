@@ -59,11 +59,15 @@ function openNewRoom() {
   newRoomDialog.value = true
 }
 function closeNewHome() {
-  newHomeDialog.value = false
+  setTimeout(() => {
+    newHomeDialog.value = false
+  }, 500)
 }
 
 function closeNewRoom() {
-  newRoomDialog.value = false
+  setTimeout(() => {
+    newRoomDialog.value = false
+  }, 500)
 }
 
 watch(
