@@ -59,12 +59,4 @@ const handleOnClick = async (newSpeed: string) => {
 .title{
   margin-bottom: 10px;
 }
-.button{
-  display : flex;
-  margin-right: 20px;
-  flex-direction: column;
-  justify-content: center;
-  justify-items: center;
-}
-
 </style>
