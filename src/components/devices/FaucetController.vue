@@ -43,7 +43,7 @@ watch([pressure, unit], async () => {
 </script>
 
 <template>
-  <v-switch label="Abierto" inset color="primary" v-model="open" />
+  <v-switch :label="open ? 'Abierto' : 'Cerrado'" inset color="primary" v-model="open" />
   <!-- We don't disable the slider in case the user wants to change the settings _before_ opening the tap -->
   <div class="slider">
     <v-slider
@@ -52,6 +52,7 @@ watch([pressure, unit], async () => {
       :min="1"
       :max="100"
       :step="1"
+      :disabled="!open"
       thumb-label="always"
       color="primary"
     >
@@ -64,6 +65,7 @@ watch([pressure, unit], async () => {
         v-model="unit"
         :items="['ml', 'cl', 'dl', 'l', 'dal', 'hl', 'kl']"
         variant="outlined"
+        :disabled="!open"
       />
     </div>
   </div>
