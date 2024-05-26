@@ -134,11 +134,11 @@ watch(dialog, (value) => {
   }
 })
 const pinStore=usePinStore()
+const isProtected=pinStore.pin
 const roomsNames=(await get_rooms()).result.map((item) => item.name)
 const router=useRouter()
 const route=useRoute()
 const roomName = ref('')
-const isProtected=pinStore.pin
 const houseCode = ref(null)
 const currentStep = ref(0)
 const loading = ref(false)
@@ -187,21 +187,21 @@ const isroomNameValid = computed(() => {
   return roomNameRules.every((rule) => rule(roomName.value) === true)
 })
 
-const homeCodeRules = [
-  (v: any) => !!v || 'Obligatory',
-  (v: any) => /^[0-9]*$/.test(v) || 'Must be a number',
-  (v: any) => (v && v.length == 4) || 'Must be 4 characters long',
-  (v: any) => isProtected===v || 'Incorrect PIN'
-]
-
-const ishomeCodeValid = computed(() => {
-  return (
-    homeCodeRules.every((rule) => rule(houseCode.value) === true)
-  )
-})
-
 const isValidStepName = computed(() => isroomNameValid.value)
-const isValidStepCode = computed(() => ishomeCodeValid.value)
+
+const valid = ref(true)
+function validate(n: string) {
+  valid.value = pinStore.validate(n)
+  if (valid.value) {
+    currentStep.value++
+  }
+}
+function on_change(n: string) {
+  if (n.length !== 4) {
+    // Oh, the irony
+    valid.value = true
+  }
+}
 </script>
 
 <template>
@@ -211,25 +211,23 @@ const isValidStepCode = computed(() => ishomeCodeValid.value)
       <v-stepper-vertical v-model="currentStep" theme="light">
         <v-stepper-vertical-item
           v-if="isProtected"
-          title="Security PIN"
+          title="Security home PIN"
           icon="mdi-numeric-1"
           :complete="currentStep >= 1"
         >
           <v-card title="Enter your home security PIN" flat>
             <v-card-text>
-              <v-text-field
-                v-model="houseCode"
-                label="PIN"
-                :rules="homeCodeRules"
-                clearable
-                suffix="Must be 4 characters long"
+              <v-otp-input
+                :length="4"
+                :error="!valid"
+                variant="outlined"
+                @finish="validate"
+                @update:model-value="on_change"
               />
             </v-card-text>
           </v-card>
-          <template v-slot:next>
-            <v-btn :disabled="!isValidStepCode" @click="currentStep += 1" />
-          </template>
           <template v-slot:prev></template>
+          <template v-slot:next></template>
         </v-stepper-vertical-item>
 
         <v-stepper-vertical-item
@@ -250,10 +248,10 @@ const isValidStepCode = computed(() => ishomeCodeValid.value)
               />
             </v-card-text>
           </v-card>
+          <template v-slot:prev></template>
           <template v-slot:next>
             <v-btn :disabled="!isValidStepName" @click="currentStep += 1" />
-          </template> <template v-slot:prev></template>
-
+          </template>
         </v-stepper-vertical-item>
         <v-stepper-vertical-item
           :title="`Paso ${isProtected ? '3' : '2'}`"

@@ -160,13 +160,13 @@ function on_pin_change(n: string) {
         <p v-else-if="deviceStore.device.type.name === 'horno'">Horno</p>
         <p v-else-if="deviceStore.device.type.name === 'puerta'">Puerta</p>
         <p v-else-if="deviceStore.device.type.name === 'alarma'">Alarma</p>
-        <p v-else>¡Dispositivo desconocido!</p>
+        <p v-else>¡Unknown device!</p>
       </div>
 
       <div class="actions">
         <div class="select">
           <v-select
-            label="Cambiar habitación"
+            label="Move to room"
             :items="homeStore.rooms.filter((r) => r.id !== roomStore.room?.id)"
             item-title="name"
             item-value="id"
@@ -198,8 +198,7 @@ function on_pin_change(n: string) {
   </div>
   <div v-else>
     <p>
-      ¡No hay dispositivo seleccionado! Tal vez una foto acá para decirle cómo agregar un
-      dispositivo
+      ¡No device selected!
     </p>
   </div>
 </template>

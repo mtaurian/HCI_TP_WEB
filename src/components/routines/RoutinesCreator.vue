@@ -245,8 +245,7 @@ const handleDown = (index : number) => {
   </div>
   <div v-else>
     <p>
-      ¡No hay rutina seleccionada! Tal vez una foto acá para decirle cómo agregar un
-      dispositivo
+      There is no selected routine!
     </p>
   </div>
   <template>

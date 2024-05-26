@@ -404,7 +404,7 @@ function goToDevices() {
         <img src="@/assets/logo.png" alt="logo" class="logo" />
         <div class="select">
           <v-select
-            label="Casa"
+            label="House"
             v-model="initial_home"
             :items="housesStore.homes"
             item-title="name"
@@ -418,12 +418,12 @@ function goToDevices() {
             <template #no-data></template>
             <template #append-item>
               <v-list-item prepend-icon="mdi-plus" link variant="tonal" @click="openNewHome">
-                <v-list-item-title>Crear Casa</v-list-item-title>
+                <v-list-item-title>Add house</v-list-item-title>
               </v-list-item>
             </template>
           </v-select>
           <v-select
-            label="Cuarto"
+            label="Room"
             v-model="initial_room"
             :items="homeStore.rooms"
             item-title="name"
@@ -445,7 +445,7 @@ function goToDevices() {
             </template>
             <template #append-item>
               <v-list-item prepend-icon="mdi-plus" link variant="tonal" @click="openNewRoom">
-                <v-list-item-title>Crear Cuarto</v-list-item-title>
+                <v-list-item-title>Add room</v-list-item-title>
               </v-list-item>
             </template>
           </v-select>
