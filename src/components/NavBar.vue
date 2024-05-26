@@ -17,6 +17,7 @@
  */
 
 import { computed, ref, watch, type Ref } from 'vue'
+
 import { useRoute, useRouter } from 'vue-router'
 import {
   useAllHousesStore,
@@ -26,6 +27,7 @@ import {
   useRoutineStore,
   usePinStore
 } from '@/stores'
+
 import AddHome from './AddHome.vue'
 import AddRoom from './AddRoom.vue'
 
@@ -54,23 +56,6 @@ const initial_home: Ref<string | null> = ref(null)
 const initial_room: Ref<string | null> = ref(null)
 
 const loading = computed(() => housesStore.loading || homeStore.loading || roomStore.loading)
-function openNewHome() {
-  newHomeDialog.value = true
-}
-function openNewRoom() {
-  newRoomDialog.value = true
-}
-function closeNewHome() {
-  setTimeout(() => {
-    newHomeDialog.value = false
-  }, 500)
-}
-
-function closeNewRoom() {
-  setTimeout(() => {
-    newRoomDialog.value = false
-  }, 500)
-}
 
 watch(
   [() => route.params.home, () => route.params.room],
@@ -298,6 +283,26 @@ function changeHome(home: string) {
 
 function changeRoom(room: string) {
   router.push({ name: 'dashboard', params: { home: route.params.home, room } })
+}
+
+function openNewHome() {
+  newHomeDialog.value = true
+}
+
+function openNewRoom() {
+  newRoomDialog.value = true
+}
+
+function closeNewHome() {
+  setTimeout(() => {
+    newHomeDialog.value = false
+  }, 500)
+}
+
+function closeNewRoom() {
+  setTimeout(() => {
+    newRoomDialog.value = false
+  }, 500)
 }
 
 function goToRoutinesEditor() {
