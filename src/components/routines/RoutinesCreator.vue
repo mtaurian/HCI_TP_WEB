@@ -275,7 +275,7 @@ const handleChangeName = async (newName : string) =>{
           <v-card-title>Confirm changes</v-card-title>
         </div>
         <div class="dialog">
-          <p>Are you sure you want change the {{routineStore.routine?.name}} from {{homeStore.home?.name}}?</p>
+          <p>Are you sure you want to change the {{routineStore.routine?.name}} from {{homeStore.home?.name}}?</p>
         </div>
         <div class="dialogActions">
           <v-card-actions class="dialogActions">
