@@ -144,7 +144,7 @@ import { useHomeStore } from '@/stores'
 const props = defineProps<{
   device_actionName: string,
   device_type_name : string,
-  theParams? :( number | string)[]
+  theParams? :( number | string)[] | null
 }>()
 
 const emit = defineEmits(['response', 'response2']);
@@ -174,7 +174,7 @@ watchEffect(() => {
       action === ActionsEnum.SETLEVEL ||
       action === ActionsEnum.SETTEMPERATURE
     ) {
-      emit('response', minSliderMap[props.device_type_name])
+      emit('response', minSliderMap[props.device_type_name as keyof typeof minSliderMap ])
     } else if (action === ActionsEnum.DISPENSE) {
       emit('response', minSliderMap['faucet'])
       emit('response2', defaultSelect[ActionsEnum.DISPENSE]['faucet'])
@@ -182,8 +182,8 @@ watchEffect(() => {
       emit('response', 'FFFFFF')
     } else if (action === ActionsEnum.SETFREEZERTEMPERATURE) {
       emit('response', 0)
-    } else if (defaultSelect[props.device_actionName]) {
-      emit('response', defaultSelect[props.device_actionName][props.device_type_name])
+    } else if (defaultSelect[props.device_actionName as keyof typeof defaultSelect ]) {
+      emit('response', defaultSelect[props.device_actionName as keyof typeof defaultSelect][props.device_type_name as keyof typeof defaultSelect[ keyof typeof defaultSelect]])
     }
 
   }
@@ -203,8 +203,8 @@ const select = ref(
   (props.theParams
     && props.theParams.length > 0
   ) ? ((typeof props.theParams[0] == 'string') ? props.theParams[0] : ((props.theParams.length > 1 && typeof props.theParams[1] == 'string') ? props.theParams[1] :
-      defaultSelect[props.device_actionName] ? defaultSelect[props.device_actionName][props.device_type_name] ?? '' : '')) :
-    defaultSelect[props.device_actionName] ? defaultSelect[props.device_actionName][props.device_type_name] ?? '' : '')
+      defaultSelect[props.device_actionName as keyof typeof defaultSelect]?.[props.device_type_name as keyof typeof defaultSelect[keyof typeof defaultSelect]] ?? '' )) :
+     defaultSelect[props.device_actionName as keyof typeof defaultSelect]?.[props.device_type_name as keyof typeof defaultSelect[keyof typeof defaultSelect]] ?? '' )
 
 const updateSelected = (val : string) => {
   select.value = val;

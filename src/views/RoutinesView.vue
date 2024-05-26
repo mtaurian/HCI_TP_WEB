@@ -1,5 +1,5 @@
 <template>
-  <main>
+  <main class="main">
     <!-- <h1>House code: {{ $route.params.home }}<br />Room code: {{ $route.params.room }}</h1> -->
     <div class="list">
       <RoutinesList />
@@ -47,8 +47,8 @@
         </div>
         <div class="dialogActions">
           <v-card-actions>
-            <v-btn  color="error" @click="()=> deleteDialog = false">Cancel</v-btn>
-            <v-btn color="primary" class="buttons" @click="()=> { handleDelete() ; deleteDialog = false}">Delete</v-btn>
+            <v-btn  color="primary" @click="()=> deleteDialog = false">Cancel</v-btn>
+            <v-btn color="error" class="buttons" @click="()=> { handleDelete() ; deleteDialog = false}">Delete</v-btn>
           </v-card-actions>
         </div>
       </v-card>
@@ -106,7 +106,9 @@ main {
   margin-bottom: 1rem;
   align-items: center;
 }
-
+.main{
+  overflow: hidden;
+}
 .controller > .fab{
   width : 90%;
   display : flex;

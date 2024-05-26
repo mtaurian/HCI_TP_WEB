@@ -15,11 +15,9 @@ const changing_name = ref(false)
 const new_name = ref(routineStore.routine?.name)
 watchEffect( async () => {
   rows.value = []
-  const actions = routineStore.routine?.actions || []
-
-  // Utiliza Promise.all para manejar las acciones asíncronas
-    let i = 0;
-  const rowsData = await Promise.all(actions.map(async (action) => {
+  const actions = routineStore.routine?.actions ?? []
+   let i = 0;
+  const rowsData = await Promise.all(actions.filter((a) => a.device.type).map(async (action) => {
     i++;
     const deviceType = await get_device_type(action.device.type.id)
     return {
@@ -31,6 +29,9 @@ watchEffect( async () => {
     }
   }))
   rows.value = rowsData
+})
+watchEffect(()=> {
+  console.log(rows.value)
 })
 
 watch(() => routineStore.routine, () => {
@@ -160,7 +161,7 @@ const handleDown = (index : number) => {
       <div class="change-name" v-else>
         <v-text-field
           v-model="new_name"
-          @keydown.enter="() => {(changing_name = false); handleChangeName(new_name!)}"
+          @keydown.enter="() => {if(!isValid) return ; handleChangeName(new_name!) ; changing_name = false}"
           @keydown.esc="changing_name = false"
           :rules="nameRules"
           @update:modelValue="(val) => {new_name = val;  validateNameChange()}"
@@ -211,7 +212,7 @@ const handleDown = (index : number) => {
                 :device_type_name="rows[index].selectedDevice.type.name"
                 @response="(param) => handleResponse(param, index, 0)"
                 @response2="(param) => handleResponse(param, index, 1)"
-                :theParams="rows[index].selectedActionParams"
+                :theParams="rows[index].selectedActionParams.length > 0 ? rows[index].selectedActionParams : null "
               />
             </div>
           </v-col>
