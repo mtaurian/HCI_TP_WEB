@@ -1,65 +1,71 @@
 <template>
-  <main class="main">
+  <main class="main" v-if="homeStore.devices.length">
     <!-- <h1>House code: {{ $route.params.home }}<br />Room code: {{ $route.params.room }}</h1> -->
     <div class="list">
       <RoutinesList />
     </div>
-    <div class="separator"></div>
+    <div :class="routineStore.routine ? 'separator' : ''"></div>
 
     <div class="controller">
       <div class="placeHolder">
-        <RoutinesCreator
-        @delete="() => deleteDialog = true"
-        />
+        <RoutinesCreator @delete="() => (deleteDialog = true)" v-if="routineStore.routine" />
+        <p v-else>No routines available! Try adding one to get started!</p>
       </div>
       <div class="fab">
-        <v-btn height="50"  rounded
-               @click="onAddRoutine"
-               size=""
-               color="white"
-               prepend-icon="mdi-plus"
-               text="ROUTINE"
-               width="150"
+        <v-btn
+          height="50"
+          rounded
+          @click="onAddRoutine"
+          size=""
+          color="white"
+          prepend-icon="mdi-plus"
+          text="ROUTINE"
+          width="150"
         />
       </div>
     </div>
 
-    <v-dialog
-      max-width="70rem"
-      v-model="dialog"
-      persistent
-    >
-      <AddRoutine
-      @closed-or-canceled="() => dialog = false"
-      />
+    <v-dialog max-width="70rem" v-model="dialog" persistent>
+      <AddRoutine @closed-or-canceled="() => (dialog = false)" />
     </v-dialog>
-    <v-dialog
-      theme="light"
-      max-width="30rem"
-      v-model="deleteDialog"
-      persistent
-    >
+    <v-dialog theme="light" max-width="30rem" v-model="deleteDialog" persistent>
       <v-card>
-        <v-card-title>Confirm Delete</v-card-title>
-        <div class="dialog">
-          <v-icon icon="mdi-alert" color="orange" size="large"/>
-          <v-card-text>Are you sure you want delete "{{routineStore.routine?.name}}" from "{{homeStore.home?.name}}"?</v-card-text>
+        <div class="cardDialogTitle">
+          <v-icon icon="mdi-alert" color="orange" size="large" />
+          <v-card-title>Confirm Delete</v-card-title>
         </div>
-        <div class="dialogActions">
-          <v-card-actions>
-            <v-btn  color="primary" @click="()=> deleteDialog = false">Cancel</v-btn>
-            <v-btn color="error" class="buttons" @click="()=> { handleDelete() ; deleteDialog = false}">Delete</v-btn>
+        <div class="dialog">
+          <p>
+            Are you sure you want delete "{{ routineStore.routine?.name }}" from "{{
+              homeStore.home?.name
+            }}"?
+          </p>
+        </div>
+        <div>
+          <v-card-actions class="dialogActions">
+            <v-btn color="primary" @click="() => (deleteDialog = false)">Cancel</v-btn>
+            <v-btn
+              color="error"
+              class="buttons"
+              @click="
+                () => {
+                  handleDelete()
+                  deleteDialog = false
+                }
+              "
+            >
+              Delete
+            </v-btn>
           </v-card-actions>
         </div>
       </v-card>
     </v-dialog>
-
-
   </main>
-
-
+  <div class="deviceless" v-else>
+    <p>¡Esta casa no tiene dispositivos!</p>
+    <p>Para agregar una rutina necesitás al menos 1 dispositivo</p>
+  </div>
 </template>
-
 
 <style scoped>
 main {
@@ -69,6 +75,12 @@ main {
   grid-template-columns: 30% 2px 1fr;
 }
 
+.deviceless {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
 
 .separator {
   background-color: #4a4458;
@@ -81,7 +93,7 @@ main {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap : 2rem;
+  gap: 2rem;
   width: 100%;
 }
 
@@ -90,7 +102,7 @@ main {
   height: 80%;
 }
 
-@media screen and (max-width:1440px){
+@media screen and (max-width: 1440px) {
   .controller > .placeHolder {
     width: 98%;
     height: 80%;
@@ -100,18 +112,34 @@ main {
 .dialog {
   display: flex;
   flex-direction: row;
-  gap : 1.5rem;
+  gap: 1.5rem;
   margin-top: 1rem;
   margin-left: 1rem;
   margin-bottom: 1rem;
   align-items: center;
 }
-.main{
+
+.cardDialogTitle {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-left: 1.3rem;
+  margin-top: 1rem;
+}
+
+.dialogActions {
+  justify-content: right;
+  margin-right: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.main {
   overflow: hidden;
 }
-.controller > .fab{
-  width : 90%;
-  display : flex;
+
+.controller > .fab {
+  width: 90%;
+  display: flex;
   justify-content: right;
 }
 
@@ -133,15 +161,20 @@ import { useHomeStore, useRoutineStore } from '@/stores'
 const routineStore = useRoutineStore()
 const homeStore = useHomeStore()
 const dialog = ref(false)
-const deleteDialog = ref(false);
+const deleteDialog = ref(false)
 
 const onAddRoutine = () => {
   dialog.value = true
 }
 
-const handleDelete = async () =>{
-  await delete_routine(routineStore.routine?.id!);
+const handleDelete = async () => {
+  await delete_routine(routineStore.routine?.id!)
   await homeStore.invalidate()
-}
 
+  if (homeStore.routines.length) {
+    routineStore.setCurrentRoutine(homeStore.routines[0].id)
+  } else {
+    routineStore.routine = null
+  }
+}
 </script>
