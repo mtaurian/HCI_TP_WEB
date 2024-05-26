@@ -49,7 +49,7 @@ watch([pressure, unit], async () => {
     <v-slider
       label="Presión"
       v-model="pressure"
-      :min="0"
+      :min="1"
       :max="100"
       :step="1"
       thumb-label="always"
