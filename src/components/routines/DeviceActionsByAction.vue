@@ -137,9 +137,12 @@ const props = defineProps<{
 
 const emit = defineEmits(['response', 'response2']);
 
+let done = false;
+
 watchEffect(() => {
   console.log("props: ", props.theParams)
-  if (!props.theParams){
+  if (!props.theParams && !done){
+    done = true
     const action = props.device_actionName
     if (action === ActionsEnum.SETBRIGHTNESS ||
         action === ActionsEnum.SETLEVEL ||

@@ -257,6 +257,9 @@ onMounted(() => {
   justify-items: center;
   margin-top: 10px;
   justify-content: space-between;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
 }
 
 .item {

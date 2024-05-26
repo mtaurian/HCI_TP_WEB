@@ -309,6 +309,9 @@ const handleDown = (index : number) => {
   justify-content: space-between;
   border-width: 10px;
   padding-top : 1rem;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
 }
 
 .column {
