@@ -176,9 +176,9 @@ async function submit() {
 }
 
 const roomNameRules = [
-  (v: string) => !!v || 'Obligatorio',
-  (v: string) => /^[a-zA-Z0-9_ ]*$/.test(v) || 'Caracteres permitidos: a-z, A-Z, 0-9, _ y espacio',
-  (v: string) => (v && v.length >= 3 && v.length <= 60) || 'Debe contener 3-60 caracteres',
+  (v: string) => !!v || 'Obligatory',
+  (v: string) => /^[a-zA-Z0-9_ ]*$/.test(v) || 'Allowed characters: a-z, A-Z, 0-9, _ and space',
+  (v: string) => (v && v.length >= 3 && v.length <= 60) || 'Must contain 3-60 characters',
   (v: string) => !roomsNames.includes(v) || 'Another room with the same name already exists!'
 ]
 
@@ -188,10 +188,10 @@ const isroomNameValid = computed(() => {
 })
 
 const homeCodeRules = [
-  (v: any) => !!v || 'Obligatorio',
-  (v: any) => /^[0-9]*$/.test(v) || 'Debe ser un número',
-  (v: any) => (v && v.length == 4) || 'Debe ser de 4 caracteres',
-  (v: any) => isProtected===v || 'Pin incorrecto'
+  (v: any) => !!v || 'Obligatory',
+  (v: any) => /^[0-9]*$/.test(v) || 'Must be a number',
+  (v: any) => (v && v.length == 4) || 'Must be 4 characters long',
+  (v: any) => isProtected===v || 'Incorrect PIN'
 ]
 
 const ishomeCodeValid = computed(() => {
@@ -211,19 +211,18 @@ const isValidStepCode = computed(() => ishomeCodeValid.value)
       <v-stepper-vertical v-model="currentStep" theme="light">
         <v-stepper-vertical-item
           v-if="isProtected"
-          title="Paso 1"
+          title="Security PIN"
           icon="mdi-numeric-1"
           :complete="currentStep >= 1"
         >
-          <v-card title="Introduce el pin de seguridad de tu hogar" flat>
+          <v-card title="Enter your home security PIN" flat>
             <v-card-text>
               <v-text-field
                 v-model="houseCode"
-                label="Código"
+                label="PIN"
                 :rules="homeCodeRules"
                 clearable
-                placeholder="1234"
-                suffix="Debe ser de 4 caracteres"
+                suffix="Must be 4 characters long"
               />
             </v-card-text>
           </v-card>
@@ -234,20 +233,20 @@ const isValidStepCode = computed(() => ishomeCodeValid.value)
         </v-stepper-vertical-item>
 
         <v-stepper-vertical-item
-          :title="`Paso ${isProtected ? '2' : '1'}`"
+          title="Room name"
           :icon="isProtected ? 'mdi-numeric-2' : 'mdi-numeric-1'"
           :complete="isProtected ? currentStep > 1 : currentStep >= 1"
         >
-          <v-card title="Introduce un nombre para tu habitacion" flat>
+          <v-card title="Enter a name for your room" flat>
             <v-card-text>
               <v-text-field
                 v-model="roomName"
                 counter="60"
                 :rules="roomNameRules"
                 clearable
-                label="Nombre"
-                placeholder="CUARTO DE TOMI"
-                hint="Entre 3-60 caracteres"
+                label="Name"
+                placeholder="FIRST ROOM"
+                hint="Between 3-60 characters"
               />
             </v-card-text>
           </v-card>
@@ -260,7 +259,7 @@ const isValidStepCode = computed(() => ishomeCodeValid.value)
           :title="`Paso ${isProtected ? '3' : '2'}`"
           :icon="isProtected ? 'mdi-numeric-3' : 'mdi-numeric-2'"
         >
-          <v-card title="Seleccione un icono para su habitacion" subtitle="Opcional" flat>
+          <v-card title="Select an icon for your device" subtitle="Optional" flat>
             <v-card>
               <v-menu>
                 <template v-slot:activator="{ props }">
@@ -300,7 +299,7 @@ const isValidStepCode = computed(() => ishomeCodeValid.value)
         </v-stepper-vertical-item>
       </v-stepper-vertical>
       <v-card v-if="error" color="error">{{ error }}</v-card>
-      <v-btn @click="dialog=false">Cancelar</v-btn>
+      <v-btn @click="dialog=false">Cancel</v-btn>
     </v-card>
   </v-dialog>
 </template>

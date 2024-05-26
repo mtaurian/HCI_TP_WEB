@@ -280,11 +280,11 @@ watch(dialog, (value) => {
       <v-stepper-vertical v-model="currentStep" theme="light">
         <v-stepper-vertical-item
           v-if="isProtected"
-          title="Security code"
+          title="Security PIN"
           icon="mdi-numeric-1"
           :complete="currentStep >= 1"
         >
-          <v-card title="Enter your home security pin" flat>
+          <v-card title="Enter your home security PIN" flat>
             <v-card-text>
               <v-text-field
                 v-model="houseCode"
