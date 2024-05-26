@@ -120,14 +120,14 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { useAllHousesStore, useHomeStore } from '@/stores'
+import { useAllHousesStore, useHomeStore, useRoutineStore } from '@/stores'
 import { add_routine, type ApiActionToPost, type Device, get_device_type, get_routines } from '@/api'
 import DeviceActionsByAction from '@/components/routines/DeviceActionsByAction.vue'
 
 const steps = ref(['Name', 'Actions!', 'Confirm'])
 const currentStep = ref(1)
 const emit = defineEmits(['closedOrCanceled']);
-const allHousesStore = useAllHousesStore()
+const routineStore = useRoutineStore()
 const homeStore = useHomeStore()
 const devices = homeStore.devices
 const routineName = ref('')
@@ -175,7 +175,7 @@ const validateForm =  () => {
   isValid.value = rules.every((rule) => rule(routineName.value) === true) && routineName.value.length > 0
 }
 
-const onSubmit = () => {
+const onSubmit = async () => {
   const theRoutineActions : ApiActionToPost[] = []
   rows.value.forEach((row) => {
     theRoutineActions.push(
@@ -188,11 +188,12 @@ const onSubmit = () => {
       })
   })
 
-  add_routine(routineName.value, theRoutineActions, {house_id : homeStore.home.id})
+  const newOne = await add_routine(routineName.value, theRoutineActions, {house_id : homeStore.home.id})
  //TODO un deshacer de la rutinas
 
-  homeStore.invalidate();
+  await homeStore.invalidate();
   emit('closedOrCanceled')
+  await routineStore.setCurrentRoutine(newOne.result.id)
 }
 
 const handleResponce = (param : string | number | null | undefined, index : number, paramNbr : number) => {

@@ -3,11 +3,12 @@ import ControllerPlaceholder from '@/components/ControllerPlaceholder.vue'
 import DevicesList from '@/components/DevicesList.vue'
 import AddDevice from '@/components/AddDevice.vue'
 import { update_device, change_device_room, delete_device } from '@/api'
-import { useRoomStore, useDeviceStore } from '@/stores'
+import { useRoomStore, useDeviceStore, useHomeStore } from '@/stores'
 import { ref } from 'vue'
 
 const roomStore = useRoomStore()
 const deviceStore = useDeviceStore()
+const homeStore = useHomeStore()
 
 async function changeName(name: string) {
   if (!deviceStore.device) return
@@ -46,11 +47,18 @@ async function changeRoom(room: string) {
   roomStore.invalidate()
 }
 
+const invalidRoutines = ref<string[]>([])
+
 async function deleteDevice() {
   if (!deviceStore.device) return
+   invalidRoutines.value = homeStore.routines
+    .filter((r) => r.actions.map((a) => a.device.id).includes(deviceStore.device!.id))
+    .map((r) => r.name)
 
-  const confirmation = confirm('¿Estás seguro de que deseas eliminar este dispositivo?')
-  if (!confirmation) return
+  if (invalidRoutines.value.length) {
+      unsafeDeleteDialog.value = true
+      return;
+  }
 
   try {
     if (!(await delete_device(deviceStore.device.id)).result) {
@@ -61,10 +69,16 @@ async function deleteDevice() {
     alert('No se pudo eliminar el dispositivo')
   }
 
-  roomStore.invalidate()
+  await roomStore.invalidate()
+  if (roomStore.devices[0]){
+    await deviceStore.setCurrentDevice(roomStore.devices[0].id)
+  }
 }
 
 const new_device_dialog = ref(false)
+const deleteDialog = ref(false);
+const unsafeDeleteDialog = ref(false);
+
 function closeDialog() {
   setTimeout(() => {
     new_device_dialog.value = false
@@ -85,7 +99,7 @@ function closeDialog() {
         <ControllerPlaceholder
           @change_name="changeName"
           @change_room="changeRoom"
-          @delete="deleteDevice"
+          @delete="deleteDialog = true"
         />
       </div>
       <div class="fab">
@@ -106,6 +120,62 @@ function closeDialog() {
     <p>This house doesn't have rooms... yet</p>
     <p>Add the first one in the room picker!</p>
   </div>
+  <v-dialog
+    theme="light"
+    max-width="30rem"
+    v-model="deleteDialog"
+    persistent
+  >
+    <v-card>
+      <div class="cardDialogTitle">
+        <v-icon icon="mdi-alert" color="orange" size="large"/>
+        <v-card-title>Confirm Delete</v-card-title>
+      </div>
+      <div class="dialog">
+        <v-card-text>Are you sure you want delete "{{deviceStore.device?.name}}" from "{{roomStore.room?.name}}"?</v-card-text>
+      </div>
+      <div class="dialogActions">
+        <v-card-actions>
+          <v-btn  color="primary" @click="()=> deleteDialog = false">Cancel</v-btn>
+          <v-btn color="error" class="buttons" @click="()=> { deleteDevice() ; deleteDialog = false}">Delete</v-btn>
+        </v-card-actions>
+      </div>
+    </v-card>
+  </v-dialog>
+  <v-dialog
+    theme="light"
+    max-width="30rem"
+    v-model="unsafeDeleteDialog"
+    persistent
+  >
+    <v-card>
+      <div class="cardDialogTitle">
+        <v-icon icon="mdi-alert-octagon" color="error" size="large"/>
+        <v-card-title>Unable to Delete</v-card-title>
+      </div>
+      <div class="dialog">
+        <p>
+          It seems like the device is being used by one or more routines.
+          Remove the actions related with the device from the routines in order to safely delete
+          "{{deviceStore.device?.name}}"
+        </p>
+        <br/>
+        <p>
+          <strong>
+            Linked Routines:
+          </strong>
+        </p>
+        <ul class="invalidRoutinesList">
+          <li :key="routine" v-for="routine in invalidRoutines">{{routine}}</li>
+        </ul>
+      </div>
+      <div class="dialogActions">
+        <v-card-actions>
+          <v-btn  color="primary" @click="()=> unsafeDeleteDialog = false">Accept</v-btn>
+        </v-card-actions>
+      </div>
+    </v-card>
+  </v-dialog>
 </template>
 
 <style scoped>
@@ -129,7 +199,6 @@ main {
   justify-content: center;
   align-items: center;
   gap: 2rem;
-
   width: 100%;
 }
 
@@ -151,6 +220,17 @@ main {
   align-items: center;
 }
 
+.dialog {
+  margin-left: 1.3rem;
+  margin-bottom: 1rem;
+}
+.cardDialogTitle{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-left: 1.3rem;
+  margin-top: 1rem;
+}
 .roomless {
   width: 100%;
   height: 100%;
@@ -158,5 +238,9 @@ main {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+}
+
+.invalidRoutinesList{
+  margin-left: 1.5rem;
 }
 </style>
