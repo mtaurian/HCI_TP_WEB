@@ -61,7 +61,10 @@ async function submit() {
       newHome = await add_home(houseName.value, { houseCode: houseCode.value })
     }
 
-      await router.push({ name: route.name==='firststeps'? 'dashboard':route.name!, params: { home: newHome.result.id } })
+      await router.push(
+        { name: route.name==='firststeps'? 'dashboard':route.name!,
+          params: { home: newHome.result.id },
+          query:{new_home:'true'}})
 
   } catch (e) {
     handleApiError(e, error)
@@ -72,9 +75,9 @@ async function submit() {
 }
 
 const houseNameRules = [
-  (v: string) => !!v || 'Obligatorio',
-  (v: string) => /^[a-zA-Z0-9_ ]*$/.test(v) || 'Caracteres permitidos: a-z, A-Z, 0-9, _ y espacio',
-  (v: string) => (v && v.length >= 3 && v.length <= 60) || 'Debe contener 3-60 caracteres',
+  (v: string) => !!v || 'Obligatory',
+  (v: string) => /^[a-zA-Z0-9_ ]*$/.test(v) || 'Allowed characters: a-z, A-Z, 0-9, _ and space',
+  (v: string) => (v && v.length >= 3 && v.length <= 60) || 'Must contain 3-60 characters',
   (v: string) => !housesNames.includes(v) || 'Another house with the same name already exists!'
 ]
 
@@ -83,9 +86,9 @@ const isHouseNameValid = computed(() => {
 })
 
 const houseCodeRules = [
-  (v: any) => (isSwitchOn.value ? !!v || 'Obligatorio' : true),
-  (v: any) => (isSwitchOn.value ? /^[0-9]*$/.test(v) || 'Debe ser un número' : true),
-  (v: any) => (isSwitchOn.value ? (v && v.length == 4) || 'Debe ser de 4 caracteres' : true)
+  (v: any) => (isSwitchOn.value ? !!v || 'Obligatory' : true),
+  (v: any) => (isSwitchOn.value ? /^[0-9]*$/.test(v) || 'Must be a number' : true),
+  (v: any) => (isSwitchOn.value ? (v && v.length == 4) || 'Must be 4 characters long' : true)
 ]
 
 const isHouseCodeValid = computed(() => {
@@ -100,17 +103,17 @@ const isValidStep2 = computed(() => !isSwitchOn.value || isHouseCodeValid.value)
   <v-dialog persistent v-model="dialog" width="50%">
     <v-card>
       <v-stepper-vertical v-model="currentStep" theme="light">
-        <v-stepper-vertical-item title="Paso 1" value="1" :complete="currentStep > 1">
-          <v-card title="Introduce un nombre para tu hogar" flat>
+        <v-stepper-vertical-item title="House name" value="1" :complete="currentStep > 1">
+          <v-card title="Enter a name for your house" flat>
             <v-card-text>
               <v-text-field
                 required
                 v-model="houseName"
                 counter="60"
                 :rules="houseNameRules"
-                label="Nombre"
-                placeholder="CASA 1"
-                hint="Entre 3-60 caracteres"
+                label="Name"
+                placeholder="FIRST HOME"
+                hint="Between 3-60 characters"
               />
             </v-card-text>
           </v-card>
@@ -118,22 +121,19 @@ const isValidStep2 = computed(() => !isSwitchOn.value || isHouseCodeValid.value)
             <v-btn :disabled="!isValidStep1" @click="currentStep++" />
           </template>
         </v-stepper-vertical-item>
-        <v-stepper-vertical-item title="Paso 2" value="2" :complete="currentStep > 2">
-          <v-card title="Pin de seguridad" flat>
+        <v-stepper-vertical-item title="Security settings" value="2" :complete="currentStep > 2">
+          <v-card title="Use your home security PIN for this device" flat>
             <v-card>
               <v-card-text>
-                <v-switch v-model="isSwitchOn" label="Usar código" color="primary" />
+                <v-switch v-model="isSwitchOn" label="Use PIN" color="primary" />
                 <v-text-field
                   v-if="isSwitchOn"
                   v-model="houseCode"
-                  label="Código"
-                  :rules="[
-                    (v) => /^[0-9]*$/.test(v) || 'Debe ser un numero',
-                    (v) => (v && v.length == 4) || 'Debe ser de 4 caracteres'
-                  ]"
+                  label="PIN"
+                  :rules=houseCodeRules
                   clearable
                   placeholder="1234"
-                  suffix="Debe ser de 4 caracteres"
+                  suffix="Must be 4 characters long"
                 />
               </v-card-text>
             </v-card>
@@ -142,12 +142,12 @@ const isValidStep2 = computed(() => !isSwitchOn.value || isHouseCodeValid.value)
             <v-btn :disabled="!isValidStep2" @click="currentStep++" />
           </template>
         </v-stepper-vertical-item>
-        <v-stepper-vertical-item title="Paso 3" value="3" :complete="currentStep > 3">
-          <v-card title="Intoduzca la ubicacion de su hogar" subtitle="Opcional" flat>
+        <v-stepper-vertical-item title="House address" value="3" :complete="currentStep > 3">
+          <v-card title="Enter your home address" subtitle="Optional" flat>
             <v-card>
               <v-card-text>
                 <v-text-field
-                  ref="direccion"
+                  ref="Address"
                   v-model="houseAddress"
                   placeholder="Ayacucho 1375, CABA, Argentina"
                 />
@@ -160,7 +160,7 @@ const isValidStep2 = computed(() => !isSwitchOn.value || isHouseCodeValid.value)
         </v-stepper-vertical-item>
       </v-stepper-vertical>
       <v-card v-if="error" color="error">{{ error }}</v-card>
-      <v-btn v-if="!mandatory" @click="dialog=false">Cancelar</v-btn>
+      <v-btn v-if="!mandatory" @click="dialog=false">Cancel</v-btn>
     </v-card>
   </v-dialog>
 </template>
