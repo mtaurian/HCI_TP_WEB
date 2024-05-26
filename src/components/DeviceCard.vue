@@ -13,8 +13,9 @@ defineEmits<{
 </script>
 
 <template>
-  <v-card :color="isActive ? 'focus' : ''" @click="$emit('click', id)">
-    <v-card-item>
+  <div class="container">
+  <v-card class="pa-3" min-height="10vh" :color="isActive ? 'focus' : ''" @click="$emit('click', id)">
+    <v-card-item :prepend-icon="stateIcon">
       <template v-slot:title>
         {{ deviceName }}
       </template>
@@ -23,15 +24,17 @@ defineEmits<{
           {{ state }}
         </p>
       </template>
-      <v-icon role="img">
-        {{ stateIcon }}
-      </v-icon>
     </v-card-item>
   </v-card>
+  </div>
 </template>
 
 <style scoped>
 .capitalize::first-letter {
   text-transform: capitalize;
+}
+
+.container{
+  margin-right: 0.5rem;
 }
 </style>

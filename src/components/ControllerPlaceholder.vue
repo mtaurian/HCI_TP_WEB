@@ -183,12 +183,15 @@ watch(
   gap: 0.4rem;
 }
 
-.controller,
-.actions {
-  margin: 0 1rem;
+.controller{
+  margin : 0 1rem;
+  overflow-y: auto;
+  overflow-x : hidden;
+  max-height: 50vh;
 }
 
 .actions {
+  margin: 0 1rem;
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   align-items: center;

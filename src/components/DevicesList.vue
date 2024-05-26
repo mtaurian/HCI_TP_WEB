@@ -21,8 +21,6 @@ async function set_device(id: string) {
 
 <template>
   <div class="device-list-container">
-    <!-- The missing properties might be stored in the meta -->
-    <!-- As soon as we find out how the API works... -->
     <DeviceCard
       v-for="item in roomStore.devices"
       :key="item.id"
@@ -43,6 +41,7 @@ async function set_device(id: string) {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  border-radius: 10px;
+  max-height: 80vh;
+  overflow-y: auto;
 }
 </style>

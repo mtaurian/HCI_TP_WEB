@@ -31,9 +31,7 @@ const handleExecute = async () => {
 
 <template>
   <div class="container">
-
-
-  <v-card  min-height="10vh" :color="isSelected ? 'focus' : ''" @click="$emit('click', routine.id)">
+  <v-card class="pa-2" min-height="10vh" :color="isSelected ? 'focus' : ''" @click="$emit('click', routine.id)">
     <v-card-item >
       <template v-slot:title>
         <div class="flex">
