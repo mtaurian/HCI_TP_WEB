@@ -874,7 +874,7 @@ export async function update_routine(
  * @param id The routine id
  * @returns The results of the routine's actions
  */
-export async function execute_routine(id: string): ApiResponse<DeviceLog['result'][]> {
+export async function execute_routine(id: string): ApiResponse<(boolean | null)[]> {
   const res = await fetch(`${BASE_URL}/routines/${id}/execute`, {
     method: 'PUT',
     body: JSON.stringify({}) // Idk, the API docs don't specify any parameters
@@ -904,3 +904,41 @@ export async function delete_routine(id: string): ApiResponse<boolean> {
 }
 
 //#endregion
+
+export const actionsReadableNames = {
+  setVolume: 'Set Volume',
+  play: 'Play',
+  stop: 'Stop',
+  pause: 'Pause',
+  resume: 'Resume',
+  nextSong: 'Next Song',
+  previousSong: 'Previous Song',
+  setGenre: 'Set Genre',
+  getPlaylist: 'Get Playlist',
+  open: 'Open',
+  close: 'Close',
+  dispense: 'Dispense',
+  setLevel: 'Set Level',
+  turnOn: 'Turn On',
+  turnOff: 'Turn Off',
+  setColor: 'Set Color',
+  setBrightness: 'Set Brightness',
+  setTemperature: 'Set Temperature',
+  setHeat: 'Set Heat',
+  setGrill: 'Set Grill',
+  setConvection: 'Set Convection',
+  setMode: 'Set Mode',
+  setVerticalSwing: 'Set Vertical Swing',
+  setHorizontalSwing: 'Set Horizontal Swing',
+  setFanSpeed: 'Set Fan Speed',
+  lock: 'Lock',
+  unlock: 'Unlock',
+  changeSecurityCode: 'Change Security Code',
+  armStay: 'Arm Stay',
+  armAway: 'Arm Away',
+  disarm: 'Disarm',
+  start: 'Start',
+  dock: 'Dock',
+  setLocation: 'Set Location',
+  setFreezerTemperature: 'Set Freezer Temperature'
+}

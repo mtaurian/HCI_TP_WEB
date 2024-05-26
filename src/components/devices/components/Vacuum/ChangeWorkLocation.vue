@@ -2,6 +2,7 @@
   <v-dialog
     v-model="dialog"
     max-width="400"
+    theme="light"
     persistent
   >
     <template v-slot:activator="{}">

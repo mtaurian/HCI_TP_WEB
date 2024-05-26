@@ -3,7 +3,14 @@
 import { useHomeStore, useRoutineStore } from '@/stores'
 import DeviceActionsByAction from '@/components/routines/DeviceActionsByAction.vue'
 import { ref, watch, watchEffect } from 'vue'
-import { type ApiActionToPost, type Device, get_device_type, get_routines, update_routine } from '@/api'
+import {
+  actionsReadableNames,
+  type ApiActionToPost,
+  type Device,
+  get_device_type,
+  get_routines,
+  update_routine
+} from '@/api'
 
 const routineStore = useRoutineStore();
 const homeStore = useHomeStore();
@@ -176,6 +183,7 @@ const handleDown = (index : number) => {
         </v-btn>
       </div>
       <div class="controller">
+        
         <v-row  class="row" v-for="(row, index) in rows" :key="row.id" no-gutters>
           <!-- Columna 1: Select para elegir dispositivos -->
           <v-col cols="12" sm="3" class="column">
@@ -197,6 +205,8 @@ const handleDown = (index : number) => {
               class="item"
               v-model="rows[index].selectedAction"
               :items="rows[index].actions"
+              :item-value="item => item"
+              :item-title="item => actionsReadableNames[item as keyof typeof actionsReadableNames]"
               @update:modelValue="value => onUpdateAction(value, index)"
               label="Select an action"
               outlined
@@ -231,7 +241,7 @@ const handleDown = (index : number) => {
           </div>
           <div class="button">
             <v-btn @click="dialog=true" color="submit">Save</v-btn>
-            <v-btn class="cancel" color="primary" @click="() => homeStore.invalidate()">
+            <v-btn class="cancel" color="primary" @click="() =>{ homeStore.invalidate() ; routineStore.invalidate()}">
               Cancel
             </v-btn>
         </div>
