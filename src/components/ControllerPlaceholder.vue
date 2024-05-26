@@ -143,9 +143,6 @@ function on_pin_change(n: string) {
         <FaucetController
           v-else-if="deviceStore.device.type.name === 'faucet'"
           :device_id="deviceStore.device.id"
-          :device_name="deviceStore.device.name"
-          :open="deviceStore.device.state.status === 'opened'"
-          :meta="deviceStore.device.meta"
         >
           Grifo
         </FaucetController>

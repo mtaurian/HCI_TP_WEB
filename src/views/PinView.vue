@@ -32,7 +32,9 @@ function on_change(n: string) {
 </script>
 
 <template>
-  <v-dialog v-model="dialog" persistent width="600">
+  <v-dialog v-model="dialog" persistent width="600"
+            theme="light"
+  >
     <v-card
       max-width="600"
       prepend-icon="mdi-lock"
@@ -42,7 +44,7 @@ function on_change(n: string) {
       <v-otp-input
         :length="4"
         :error="!valid"
-        variant="underlined"
+        variant="outlined"
         @finish="validate"
         @update:model-value="on_change"
       />

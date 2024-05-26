@@ -3,16 +3,25 @@
 import { useHomeStore, useRoutineStore } from '@/stores'
 import DeviceActionsByAction from '@/components/routines/DeviceActionsByAction.vue'
 import { ref, watch, watchEffect } from 'vue'
-import { type ApiActionToPost, type Device, get_device_type, get_routines, update_routine } from '@/api'
+import {
+  actionsReadableNames,
+  type ApiActionToPost,
+  type Device,
+  get_device_type,
+  get_routines,
+  update_routine
+} from '@/api'
 
 const routineStore = useRoutineStore();
 const homeStore = useHomeStore();
+const hasChanges = ref(false);
 const dialog = ref(false);
 const emit = defineEmits(['delete', 'change_name']);
 type rowType = {selectedDevice : Device, selectedAction : string, selectedActionParams : (string | number)[], actions : string[], id : number}
 const rows = ref<rowType[]>([])
 const changing_name = ref(false)
 const new_name = ref(routineStore.routine?.name)
+
 watchEffect( async () => {
   rows.value = []
   const actions = routineStore.routine?.actions ?? []
@@ -30,14 +39,12 @@ watchEffect( async () => {
   }))
   rows.value = rowsData
 })
-watchEffect(()=> {
-  console.log(rows.value)
-})
 
 watch(() => routineStore.routine, () => {
   new_name.value = routineStore.routine?.name
   changing_name.value = false
 })
+
 
 const scrollToSection = (sectionId: string) => {
   const section = document.getElementById(sectionId);
@@ -49,6 +56,7 @@ const scrollToSection = (sectionId: string) => {
 const addRow = async () => {
   rows.value.push({ selectedDevice: homeStore.devices[0], selectedAction: '', selectedActionParams :  [], actions: [''], id : Date.now() })
   await onUpdateDevice(homeStore.devices[0], rows.value.length - 1)
+  hasChanges.value = true
  scrollToSection('endOfRegion')
 }
 
@@ -57,6 +65,7 @@ const handleDelete = (index : number) => {
     emit('delete')
   }
   rows.value.splice(index, 1);
+  hasChanges.value = true
 }
 
 const routines = (await get_routines()).result.map((r) => r.name)
@@ -73,6 +82,7 @@ const validateNameChange = () => {
 }
 
 const onSubmit = async () => {
+  hasChanges.value = false
   const theRoutineActions : ApiActionToPost[] = []
   rows.value.forEach((row) => {
     theRoutineActions.push(
@@ -92,12 +102,12 @@ const onSubmit = async () => {
   await homeStore.invalidate()
   await routineStore.setCurrentRoutine(routineStore.routine?.id!)
 
-
 }
 
 const handleResponse = (param : string | number | null | undefined, index : number, paramNbr : number) => {
   if (param !== null && param !== undefined){
     rows.value[index].selectedActionParams[paramNbr] = param;
+    hasChanges.value = true
   }
 }
 
@@ -118,7 +128,8 @@ const handleUp = (index : number) => {
 
   const auxi = rows.value[index-1]
   rows.value[index-1] = rows.value[index]
-  rows.value[index] = auxi;
+  rows.value[index] = auxi
+  hasChanges.value = true
 }
 
 const handleDown = (index : number) => {
@@ -126,24 +137,23 @@ const handleDown = (index : number) => {
 
   const auxi = rows.value[index+1]
   rows.value[index+1] = rows.value[index]
-  rows.value[index] = auxi;
+  rows.value[index] = auxi
+  hasChanges.value = true
 
 }
 
-
-
-  const handleChangeName = async (newName : string) =>{
-    const theActionsForPut = routineStore.routine?.actions.map(action => ({
-      device: { id: action.device.id! },
-      actionName: action.actionName,
-      params: action.params,
-      meta: action.meta
-    })) || []
-    await update_routine(routineStore.routine?.id!, newName, theActionsForPut, routineStore.routine?.meta!)
-    await homeStore.invalidate()
-    await routineStore.invalidate()
-    await routineStore.setCurrentRoutine(routineStore.routine?.id!)
-  }
+const handleChangeName = async (newName : string) =>{
+  const theActionsForPut = routineStore.routine?.actions.map(action => ({
+    device: { id: action.device.id! },
+    actionName: action.actionName,
+    params: action.params,
+    meta: action.meta
+  })) || []
+  await update_routine(routineStore.routine?.id!, newName, theActionsForPut, routineStore.routine?.meta!)
+  await homeStore.invalidate()
+  await routineStore.invalidate()
+  await routineStore.setCurrentRoutine(routineStore.routine?.id!)
+}
 
 </script>
 
@@ -176,6 +186,7 @@ const handleDown = (index : number) => {
         </v-btn>
       </div>
       <div class="controller">
+
         <v-row  class="row" v-for="(row, index) in rows" :key="row.id" no-gutters>
           <!-- Columna 1: Select para elegir dispositivos -->
           <v-col cols="12" sm="3" class="column">
@@ -197,6 +208,8 @@ const handleDown = (index : number) => {
               class="item"
               v-model="rows[index].selectedAction"
               :items="rows[index].actions"
+              :item-value="item => item"
+              :item-title="item => actionsReadableNames[item as keyof typeof actionsReadableNames]"
               @update:modelValue="value => onUpdateAction(value, index)"
               label="Select an action"
               outlined
@@ -224,18 +237,18 @@ const handleDown = (index : number) => {
       </div>
       <div class="editorButtons">
           <div class="flex">
-            <div class="saveChanges">
+            <div class="button">
               <v-btn @click="addRow" color="primary">Add Action</v-btn>
             </div>
 
           </div>
-          <div class="button">
-            <v-btn @click="dialog=true" color="submit">Save</v-btn>
-            <v-btn class="cancel" color="primary" @click="() => homeStore.invalidate()">
+          <div class="button" v-if="hasChanges">
+            <v-btn class="cancel" width="9rem" color="primary" @click="() =>{ homeStore.invalidate() ; routineStore.invalidate() ; hasChanges = false}">
               Cancel
             </v-btn>
+            <v-btn @click="dialog=true" width="9rem"  color="submit">Save Changes</v-btn>
         </div>
-          <v-btn @click="() => emit('delete')" color="primary">
+          <v-btn class="button" @click="() => emit('delete')" color="primary">
             <template #prepend>
               <v-icon>mdi-delete</v-icon>
             </template>
@@ -256,14 +269,16 @@ const handleDown = (index : number) => {
       persistent
     >
       <v-card>
-        <v-card-title>Confirm changes</v-card-title>
-        <div class="dialog">
+        <div class="cardDialogTitle">
           <v-icon icon="mdi-alert" color="orange" size="large"/>
-          <v-card-text>Are you sure you want change the {{routineStore.routine?.name}} from {{homeStore.home?.name}}?</v-card-text>
+          <v-card-title>Confirm changes</v-card-title>
+        </div>
+        <div class="dialog">
+          <p>Are you sure you want change the {{routineStore.routine?.name}} from {{homeStore.home?.name}}?</p>
         </div>
         <div class="dialogActions">
-          <v-card-actions>
-            <v-btn  color="error" @click="()=> dialog = false">Cancel</v-btn>
+          <v-card-actions class="dialogActions">
+            <v-btn  color="error" @click="()=> {dialog = false }">Cancel</v-btn>
             <v-btn color="primary" class="buttons" @click="()=> { onSubmit() ; dialog = false}">Confirm Changes</v-btn>
           </v-card-actions>
         </div>
@@ -301,6 +316,11 @@ const handleDown = (index : number) => {
 .actions {
   margin: 0 1rem;
 }
+.dialogActions{
+  justify-content: right;
+  margin-right: 0.5rem;
+  margin-bottom: 0.5rem;
+}
 
 .row{
   align-content: center;
@@ -325,6 +345,13 @@ const handleDown = (index : number) => {
   grid-template-columns: repeat(5, 1fr);
   align-items: center;
   justify-items: center;
+}
+.cardDialogTitle{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-left: 1.3rem;
+  margin-top: 1rem;
 }
 
 .dialog {
@@ -392,6 +419,6 @@ const handleDown = (index : number) => {
   grid-column: -2;
 }
 .cancel{
-  margin-left: 1rem;
+  margin-right: 1.5rem;
 }
 </style>

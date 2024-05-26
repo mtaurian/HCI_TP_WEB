@@ -3,7 +3,7 @@
     <v-btn
       @click="handleOnClick"
       class="ma-2"
-      :color="isOn ? 'red-lighten-2' : 'green-lighten-2'"
+      :color="isOn ?  'green-lighten-2' : 'red-lighten-2'"
       height="80"
       width="100"
       variant="text"
@@ -12,7 +12,7 @@
       <div class="iconPos">
 
       <v-icon class="mb-2" icon="mdi-power" :size="50" />
-      {{isOn ? 'Off' : (hasBattery() ? 'On' : 'Low Battery')}}
+      {{isOn ? 'On' : (hasBattery() ? 'Off' : 'Low Battery')}}
       </div>
     </v-btn>
 <!--    <v-label>{{isOn ? 'Pause' : (hasBattery() ? 'Start' : 'Low Battery')}}</v-label>-->
