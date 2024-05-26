@@ -256,10 +256,11 @@ const handleChangeName = async (newName : string) =>{
           </v-btn>
       </div>
   </div>
-  <div v-else>
-    <p>
+  <div v-else class="flex flex-column align-content-center">
+    <img src="/no_routine.png" class="no_routine" alt="No routine selected"/>
+    <h2 class="mt-10">
       There is no selected routine!
-    </p>
+    </h2>
   </div>
   <template>
     <v-dialog
@@ -420,5 +421,9 @@ const handleChangeName = async (newName : string) =>{
 }
 .cancel{
   margin-right: 1.5rem;
+}
+.no_routine{
+  max-width: 60%;
+  max-height: 60%;
 }
 </style>

@@ -117,8 +117,9 @@ function closeDialog() {
     </div>
   </main>
   <div v-else class="roomless">
-    <p>This house doesn't have rooms... yet</p>
-    <p>Add the first one in the room picker!</p>
+    <img class="no_room" src="/no_room.png" alt="No room available"/>
+    <h2>This house doesn't have rooms... yet</h2>
+    <h2>Add the first one in the room picker!</h2>
   </div>
   <v-dialog
     theme="light"
@@ -242,5 +243,9 @@ main {
 
 .invalidRoutinesList{
   margin-left: 1.5rem;
+}
+.no_room{
+  max-height: 60%;
+  max-width: 60%;
 }
 </style>

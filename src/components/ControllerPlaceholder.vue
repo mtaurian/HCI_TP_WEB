@@ -193,10 +193,11 @@ function on_pin_change(n: string) {
       />
     </div>
   </div>
-  <div v-else>
-    <p>
+  <div v-else class="flex flex-column align-content-center">
+    <img class="no_device" src="/no_device.png" alt="No device selected"/>
+    <h2 class="mt-10">
       ¡No device selected!
-    </p>
+    </h2>
   </div>
 </template>
 
@@ -280,4 +281,8 @@ function on_pin_change(n: string) {
 .button {
   grid-column: -2;
 }
+.no_device{
+  width: 60%;
+  height: 60%;
+ }
 </style>
