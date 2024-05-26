@@ -205,7 +205,7 @@ const isValidStepCode = computed(() => ishomeCodeValid.value)
 </script>
 
 <template>
-  <v-dialog v-model="dialog" width="700">
+  <v-dialog v-model="dialog" width="50%">
     <v-card>
       <!--<v-icon color="success" icon="mdi-access-point" size="small"></v-icon>-->
       <v-stepper-vertical v-model="currentStep" theme="light">
