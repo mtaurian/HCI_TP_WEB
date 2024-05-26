@@ -1,6 +1,6 @@
 <template>
   <div class="title">
-    <p class="font-weight-black" size="70">Mode</p>
+    <span class="span">Mode</span>
   </div>
   <v-row>
     <v-col class="button">
@@ -81,13 +81,16 @@ const handleOnClick = async (newMode: Mode) => {
 
 <style scoped>
 .title{
-  margin-bottom: 10px;
+  margin-bottom: 1rem;
 }
 .button{
   display : flex;
   margin-right: 20px;
   justify-content: center;
   justify-items: center;
+}
+.span{
+  margin-bottom: 2rem;
 }
 
 </style>
