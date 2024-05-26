@@ -93,11 +93,11 @@ function closeDialog() {
           rounded
           height="50"
           color="white"
-          width="170"
+          width="150"
           @click="new_device_dialog = true"
           prepend-icon="mdi-plus"
           size=""
-          text="DISPOSITIVO"
+          text="Devices"
         />
       </div>
     </div>
