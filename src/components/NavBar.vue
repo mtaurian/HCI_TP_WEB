@@ -136,7 +136,7 @@ watch(
       localStorage.setItem('last_home', home)
 
       if (pinStore.homeId !== home) {
-        if (homeStore.home!.meta?.houseCode) {
+        if (homeStore.home!.meta?.houseCode && !route.query.new_home) {
           pinStore.set(homeStore.home!.id, homeStore.home!.meta.houseCode as string)
           initial_room.value = null
 
@@ -297,7 +297,7 @@ watch(
       localStorage.setItem('last_home', home)
 
       if (pinStore.homeId !== home) {
-        if (homeStore.home!.meta?.houseCode) {
+        if (homeStore.home!.meta?.houseCode && !route.query.new_home) {
           pinStore.set(homeStore.home!.id, homeStore.home!.meta.houseCode as string)
 
           await router.replace({
