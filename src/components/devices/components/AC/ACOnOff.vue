@@ -4,12 +4,15 @@
       @click="handleOnClick"
       class="ma-2"
       :color="isOn ? 'green-lighten-2' : 'red-lighten-2'"
-      :size="50"
+      height="80"
+      width="80"
       variant="text"
     >
+      <div class="iconPos">
       <v-icon icon="mdi-power" :size="50" />
+      {{ isOn ? 'On' : 'Off' }}
+      </div>
     </v-btn>
-    <v-label>{{ isOn ? 'On' : 'Off' }}</v-label>
   </div>
 </template>
 
@@ -57,5 +60,11 @@ const handleOnClick = async () => {
   justify-content: center;
   justify-items: center;
 }
-
+.iconPos{
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Centra los elementos horizontalmente */
+  align-items: center; /* Centra los elementos verticalmente */
+  align-content: center;
+}
 </style>

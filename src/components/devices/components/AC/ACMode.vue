@@ -8,12 +8,12 @@
         @click="handleOnClick(Mode.COOL)"
         class="ma-2"
         :color="coolOn ? 'yellow' : 'white'"
-        :size="50"
+        height="60"
+        width="120"
         variant="text"
       >
-      <v-icon icon="mdi-snowflake" :size="50" />
+      <v-icon  class="mr-2" icon="mdi-snowflake" :size="50" />Cool
       </v-btn>
-      <v-label>Cool</v-label>
     </v-col>
 
     <v-col class="button">
@@ -21,12 +21,12 @@
         @click="handleOnClick(Mode.HEAT)"
         class="ma-2"
         :color="heatOn ? 'yellow' : 'white'"
-        :size="50"
+        height="60"
+        width="120"
         variant="text"
       >
-        <v-icon icon="mdi-white-balance-sunny" :size="50" />
+        <v-icon class="mr-2" icon="mdi-white-balance-sunny" :size="50" />Heat
       </v-btn>
-      <v-label>Heat</v-label>
     </v-col>
 
     <v-col class="button">
@@ -34,12 +34,12 @@
         @click="handleOnClick(Mode.FAN)"
         class="ma-2"
         :color="fanOn ? 'yellow' : 'white'"
-        :size="50"
+        height="60"
+        width="120"
         variant="text"
       >
-      <v-icon icon="mdi-fan" :size="50" />
+      <v-icon  class="mr-2" icon="mdi-fan" :size="50" />Fan
       </v-btn>
-      <v-label>Fan</v-label>
     </v-col>
   </v-row>
 </template>
