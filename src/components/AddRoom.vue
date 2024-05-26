@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, type Ref, watch, onMounted } from 'vue'
 import { add_room, add_room_to_home, get_rooms } from '@/api'
-import { handleApiError ,useHomeStore} from '@/stores'
+import { handleApiError, useHomeStore, usePinStore } from '@/stores'
 import { useRoute, useRouter } from 'vue-router'
 
 /**
@@ -133,10 +133,12 @@ watch(dialog, (value) => {
     emit('turnoff')
   }
 })
+const pinStore=usePinStore()
 const roomsNames=(await get_rooms()).result.map((item) => item.name)
 const router=useRouter()
 const route=useRoute()
 const roomName = ref('')
+const isProtected=pinStore.pin
 const houseCode = ref(null)
 const currentStep = ref(0)
 const loading = ref(false)
@@ -161,6 +163,7 @@ async function submit() {
     newRoom = await add_room(roomName.value, { roomIcon: iconSelected.value })
     await add_room_to_home(homeStore.home!?.id, newRoom.result.id)
     await router.push({ name: 'dashboard', params: { home: route.params.home, room:newRoom.result.id } })
+    pinStore.validate(houseCode.value!)
   } catch (e) {
     handleApiError(e, error)
   }
@@ -188,14 +191,12 @@ const homeCodeRules = [
   (v: any) => !!v || 'Obligatorio',
   (v: any) => /^[0-9]*$/.test(v) || 'Debe ser un número',
   (v: any) => (v && v.length == 4) || 'Debe ser de 4 caracteres',
-  (v: any) => v === homeStore.home?.meta.houseCode || 'Pin incorrecto'
+  (v: any) => isProtected===v || 'Pin incorrecto'
 ]
 
 const ishomeCodeValid = computed(() => {
-  console.log(props.code)
-
   return (
-    homeCodeRules.every((rule) => rule(houseCode.value) === true) && houseCode.value === props.code
+    homeCodeRules.every((rule) => rule(houseCode.value) === true)
   )
 })
 
@@ -209,7 +210,7 @@ const isValidStepCode = computed(() => ishomeCodeValid.value)
       <!--<v-icon color="success" icon="mdi-access-point" size="small"></v-icon>-->
       <v-stepper-vertical v-model="currentStep" theme="light">
         <v-stepper-vertical-item
-          v-if="props.code"
+          v-if="isProtected"
           title="Paso 1"
           icon="mdi-numeric-1"
           :complete="currentStep >= 1"
@@ -229,12 +230,13 @@ const isValidStepCode = computed(() => ishomeCodeValid.value)
           <template v-slot:next>
             <v-btn :disabled="!isValidStepCode" @click="currentStep += 1" />
           </template>
+          <template v-slot:prev></template>
         </v-stepper-vertical-item>
 
         <v-stepper-vertical-item
-          :title="`Paso ${props.code ? '2' : '1'}`"
-          :icon="props.code ? 'mdi-numeric-2' : 'mdi-numeric-1'"
-          :complete="props.code ? currentStep > 1 : currentStep >= 1"
+          :title="`Paso ${isProtected ? '2' : '1'}`"
+          :icon="isProtected ? 'mdi-numeric-2' : 'mdi-numeric-1'"
+          :complete="isProtected ? currentStep > 1 : currentStep >= 1"
         >
           <v-card title="Introduce un nombre para tu habitacion" flat>
             <v-card-text>
@@ -251,11 +253,12 @@ const isValidStepCode = computed(() => ishomeCodeValid.value)
           </v-card>
           <template v-slot:next>
             <v-btn :disabled="!isValidStepName" @click="currentStep += 1" />
-          </template>
+          </template> <template v-slot:prev></template>
+
         </v-stepper-vertical-item>
         <v-stepper-vertical-item
-          :title="`Paso ${props.code ? '3' : '2'}`"
-          :icon="props.code ? 'mdi-numeric-3' : 'mdi-numeric-2'"
+          :title="`Paso ${isProtected ? '3' : '2'}`"
+          :icon="isProtected ? 'mdi-numeric-3' : 'mdi-numeric-2'"
         >
           <v-card title="Seleccione un icono para su habitacion" subtitle="Opcional" flat>
             <v-card>

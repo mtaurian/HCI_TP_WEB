@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { add_device, get_devices } from '@/api'
 import { computed, type Ref, ref, onMounted, watch } from 'vue'
-import { handleApiError, useRoomStore, useDeviceStore } from '@/stores'
+import { handleApiError, useRoomStore, useDeviceStore, usePinStore } from '@/stores'
 import { get_device_types, add_device_to_room } from '@/api'
 
 const deviceTypeSelect = ref('')
@@ -10,7 +10,9 @@ const deviceTypes = (await get_device_types()).result.map((item) => ({
   name: item.name.toUpperCase()
 }))
 const devicesNames = (await get_devices()).result.map((item) => item.name)
-
+const pinStore=usePinStore()
+const isProtected=pinStore.pin
+const houseCode = ref(null)
 const currentStep = ref(0)
 const deviceName = ref('')
 const loading = ref(false)
@@ -141,6 +143,7 @@ function resetValues() {
   loading.value = false
   paired.value = false
   iconSelected.value = ''
+  houseCode.value = null
 }
 
 async function submit() {
@@ -153,6 +156,7 @@ async function submit() {
     await add_device_to_room(roomStore.room!?.id, newDevice.result.id)
     await roomStore.invalidate()
     await deviceStore.setCurrentDevice(newDevice.result.id)
+    pinStore.validate(houseCode.value!)
   } catch (e) {
     handleApiError(e, error)
   }
@@ -172,6 +176,18 @@ const deviceNameRules = [
   (v: string) => !devicesNames.includes(v) || 'Another device with the same name already exists!'
 ]
 
+const homeCodeRules = [
+  (v: any) => !!v || 'Obligatorio',
+  (v: any) => /^[0-9]*$/.test(v) || 'Debe ser un número',
+  (v: any) => (v && v.length == 4) || 'Debe ser de 4 caracteres',
+  (v: any) => isProtected===v || 'Pin incorrecto'
+]
+const ishomeCodeValid = computed(() => {
+  return (
+    homeCodeRules.every((rule) => rule(houseCode.value) === true)
+  )
+})
+const isValidStepCode = computed(() => ishomeCodeValid.value)
 const isDeviceNameValid = computed(() => {
   return deviceNameRules.every((rule) => rule(deviceName.value) === true)
 })
@@ -261,7 +277,32 @@ watch(dialog, (value) => {
   <v-dialog v-model="dialog" width="700">
     <v-card>
       <v-stepper-vertical v-model="currentStep" theme="light">
-        <v-stepper-vertical-item title="Paso 1" icon="mdi-numeric-1" :complete="currentStep > 0">
+        <v-stepper-vertical-item
+          v-if="isProtected"
+          title="Paso 1"
+          icon="mdi-numeric-1"
+          :complete="currentStep >= 1"
+        >
+          <v-card title="Introduce el pin de seguridad de tu hogar" flat>
+            <v-card-text>
+              <v-text-field
+                v-model="houseCode"
+                label="Código"
+                :rules="homeCodeRules"
+                clearable
+                placeholder="1234"
+                suffix="Debe ser de 4 caracteres"
+              />
+            </v-card-text>
+          </v-card>
+          <template v-slot:next>
+            <v-btn :disabled="!isValidStepCode" @click="currentStep += 1" />
+          </template>
+          <template v-slot:prev></template>
+        </v-stepper-vertical-item>
+        <v-stepper-vertical-item :title="`Paso ${isProtected ? '2' : '1'}`"
+                                 :icon="isProtected ? 'mdi-numeric-2' : 'mdi-numeric-1'"
+                                 :complete="isProtected ? currentStep > 1 : currentStep >= 1">
           <v-card title="Selecciona el tipo de dispositivo" flat>
             <v-select
               label="Dispositivo"
@@ -278,7 +319,9 @@ watch(dialog, (value) => {
           </template>
           <template v-slot:prev></template>
         </v-stepper-vertical-item>
-        <v-stepper-vertical-item title="Paso 2" icon="mdi-numeric-2" :complete="currentStep > 1">
+        <v-stepper-vertical-item :title="`Paso ${isProtected ? '3' : '2'}`"
+                                 :icon="isProtected ? 'mdi-numeric-3' : 'mdi-numeric-2'"
+                                 :complete="isProtected ? currentStep > 2 : currentStep >= 2">
           <v-card title="Vincular dispositvo" flat>
             <v-card>
               <v-card-text>
@@ -307,7 +350,9 @@ watch(dialog, (value) => {
             <v-btn @click="currentStep--, (paired = false)" />
           </template>
         </v-stepper-vertical-item>
-        <v-stepper-vertical-item title="Paso 3" icon="mdi-numeric-3" :complete="currentStep > 2">
+        <v-stepper-vertical-item :title="`Paso ${isProtected ? '4' : '3'}`"
+                                 :icon="isProtected ? 'mdi-numeric-4' : 'mdi-numeric-3'"
+                                 :complete="isProtected ? currentStep > 3 : currentStep >= 3">
           <v-card title="Introduce un nombre para tu dispositivo" flat>
             <v-card-text>
               <v-text-field
@@ -326,7 +371,9 @@ watch(dialog, (value) => {
           </template>
         </v-stepper-vertical-item>
 
-        <v-stepper-vertical-item title="Paso 4" icon="mdi-numeric-4" :complete="currentStep > 3">
+        <v-stepper-vertical-item  :title="`Paso ${isProtected ? '5' : '4'}`"
+                                  :icon="isProtected ? 'mdi-numeric-5' : 'mdi-numeric-4'"
+                                  :complete="isProtected ? currentStep > 4 : currentStep >= 4">
           <v-card title="Seleccione un icono para su dispositivo" subtitle="Opcional" flat>
             <v-card>
               <v-menu>
@@ -355,7 +402,9 @@ watch(dialog, (value) => {
             <v-btn  @click="currentStep++" />
           </template>
         </v-stepper-vertical-item>
-        <v-stepper-vertical-item title="Paso 5" icon="mdi-numeric-5" :complete="currentStep > 4">
+        <v-stepper-vertical-item  :title="`Paso ${isProtected ? '6' : '5'}`"
+                                  :icon="isProtected ? 'mdi-numeric-6' : 'mdi-numeric-5'"
+                                  :complete="isProtected ? currentStep > 5 : currentStep >= 5">
           <v-card title="Utilizar el PIN de seguridad para este dispositvo" flat>
             <v-switch v-model="usePin" label="Usar código" color="primary" class="mx-3"/>
           </v-card>
