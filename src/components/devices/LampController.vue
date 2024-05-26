@@ -1,34 +1,35 @@
 <template>
   <div class="rows">
-    <div class="columns">
-      <div>
+    <v-col class="power">
         <PowerButton
-          class="power"
+          class="colPower"
           v-if="state"
           :device_id="props.device_id"
           :state="state"
           @power-changed="updateDeviceState"
         />
-      </div>
-      <div>
+    </v-col>
+    <v-col>
+
         <BrigthnessSlider
-          class="slider"
+          class="colSlider"
           v-if="state"
           :device_id="props.device_id"
           :state="state"
           @color-changed="updateDeviceState"
+
         />
-      </div>
-    </div>
-    <div>
-      <ColorPicker
-        class="color"
-        v-if="state"
-        :device_id="props.device_id"
-        :state="state"
-        @color-changed="updateDeviceState"
-      />
-    </div>
+    </v-col>
+    <v-col>
+
+          <ColorPicker
+            class="colPicker"
+            v-if="state"
+            :device_id="props.device_id"
+            :state="state"
+            @color-changed="updateDeviceState"
+          />
+    </v-col>
   </div>
 </template>
 
@@ -57,30 +58,31 @@ onMounted(async () => {
 
 <style>
 .rows {
+  width: 100%;
   display: flex;
-  flex-direction: row;
-  align-items: center;
+  justify-content: center; /* Centra los elementos horizontalmente */
+  align-items: center; /* Centra los elementos verticalmente */
   align-content: center;
-  justify-items: center;
-}
-.columns {
-  display: flex;
-  flex-direction: column;
-}
-.power {
-  margin-left: 50px;
-  margin-right: 2rem;
-  align-items: center;
+  height: 100%; /* Ajusta al 100% de la altura de la ventana */
 }
 
-.color {
-  height: 40px;
-  margin-bottom: 220px;
-  align-items: center;
-  align-content: center;
-  justify-items: center;
+.colPower, .colSlider, .colPicker {
+  margin: 0 5px; /* Margen entre los elementos */
 }
-.slider {
-  margin-top: 25px;
+
+.colPower, .colSlider {
+  flex: 2; /* Se expanden igualmente */
+  width: 10%; /* Ancho máximo */
+}
+
+.colPicker {
+  flex: 2; /* Se expande el doble que los otros */
+  width: 80%; /* Ancho máximo */
+}
+.power{
+  display: flex;
+  justify-content: center; /* Centra los elementos horizontalmente */
+  align-items: center; /* Centra los elementos verticalmente */
+  align-content: center;
 }
 </style>
