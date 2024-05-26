@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { add_device, get_devices } from '@/api'
 import { computed, type Ref, ref, onMounted, watch } from 'vue'
-import { handleApiError, useRoomStore, useDeviceStore, usePinStore } from '@/stores'
+import { handleApiError,useHomeStore, useRoomStore, useDeviceStore, usePinStore } from '@/stores'
 import { get_device_types, add_device_to_room } from '@/api'
 
 const deviceTypeSelect = ref('')
@@ -9,6 +9,7 @@ const deviceTypes = (await get_device_types()).result.map((item) => ({
   id: item.id,
   name: item.name.toUpperCase()
 }))
+const homeStore = useHomeStore()
 const devicesNames = (await get_devices()).result.map((item) => item.name)
 const pinStore=usePinStore()
 const isProtected=pinStore.pin
@@ -170,17 +171,17 @@ async function submit() {
 }
 
 const deviceNameRules = [
-  (v: string) => !!v || 'Obligatorio',
-  (v: string) => /^[a-zA-Z0-9_ ]*$/.test(v) || 'Caracteres permitidos: a-z, A-Z, 0-9, _ y espacio',
-  (v: string) => (v && v.length >= 3 && v.length <= 60) || 'Debe contener 3-60 caracteres',
+  (v: string) => !!v || 'Obligatory',
+  (v: string) => /^[a-zA-Z0-9_ ]*$/.test(v) || 'Allowed characters: a-z, A-Z, 0-9, _ and space',
+  (v: string) => (v && v.length >= 3 && v.length <= 60) || 'Must contain 3-60 characters',
   (v: string) => !devicesNames.includes(v) || 'Another device with the same name already exists!'
 ]
 
 const homeCodeRules = [
-  (v: any) => !!v || 'Obligatorio',
-  (v: any) => /^[0-9]*$/.test(v) || 'Debe ser un número',
-  (v: any) => (v && v.length == 4) || 'Debe ser de 4 caracteres',
-  (v: any) => isProtected===v || 'Pin incorrecto'
+  (v: any) => !!v || 'Obligatory',
+  (v: any) => /^[0-9]*$/.test(v) || 'Must be a number',
+  (v: any) => (v && v.length == 4) || 'Must be 4 characters long',
+  (v: any) => isProtected===v || 'Incorrect PIN'
 ]
 const ishomeCodeValid = computed(() => {
   return (
@@ -192,7 +193,7 @@ const isDeviceNameValid = computed(() => {
   return deviceNameRules.every((rule) => rule(deviceName.value) === true)
 })
 
-const deviceTypeRules = [(v: any) => !!v || 'Obligatorio']
+const deviceTypeRules = [(v: any) => !!v || 'Obligatory']
 
 const isDeviceTypeValid = computed(() => {
   return deviceTypeRules.every((rule) => rule(deviceTypeSelect.value) === true)
@@ -274,24 +275,24 @@ watch(dialog, (value) => {
 </script>
 
 <template>
-  <v-dialog v-model="dialog" width="700">
+  <v-dialog v-model="dialog" width="50%">
     <v-card>
       <v-stepper-vertical v-model="currentStep" theme="light">
         <v-stepper-vertical-item
           v-if="isProtected"
-          title="Paso 1"
+          title="Security code"
           icon="mdi-numeric-1"
           :complete="currentStep >= 1"
         >
-          <v-card title="Introduce el pin de seguridad de tu hogar" flat>
+          <v-card title="Enter your home security pin" flat>
             <v-card-text>
               <v-text-field
                 v-model="houseCode"
-                label="Código"
+                label="PIN"
                 :rules="homeCodeRules"
                 clearable
                 placeholder="1234"
-                suffix="Debe ser de 4 caracteres"
+                suffix="Must be 4 characters long"
               />
             </v-card-text>
           </v-card>
@@ -300,12 +301,12 @@ watch(dialog, (value) => {
           </template>
           <template v-slot:prev></template>
         </v-stepper-vertical-item>
-        <v-stepper-vertical-item :title="`Paso ${isProtected ? '2' : '1'}`"
+        <v-stepper-vertical-item :title="`Device type`"
                                  :icon="isProtected ? 'mdi-numeric-2' : 'mdi-numeric-1'"
                                  :complete="isProtected ? currentStep > 1 : currentStep >= 1">
-          <v-card title="Selecciona el tipo de dispositivo" flat>
+          <v-card title="Select the type of device" flat>
             <v-select
-              label="Dispositivo"
+              label="Device"
               v-model="deviceTypeSelect"
               :items="deviceTypes"
               item-title="name"
@@ -319,19 +320,19 @@ watch(dialog, (value) => {
           </template>
           <template v-slot:prev></template>
         </v-stepper-vertical-item>
-        <v-stepper-vertical-item :title="`Paso ${isProtected ? '3' : '2'}`"
+        <v-stepper-vertical-item title="Link device"
                                  :icon="isProtected ? 'mdi-numeric-3' : 'mdi-numeric-2'"
                                  :complete="isProtected ? currentStep > 2 : currentStep >= 2">
-          <v-card title="Vincular dispositvo" flat>
-            <v-card>
-              <v-card-text>
+          <v-card title="Find device" flat>
+            <v-card flat>
+              <v-card-text flat>
                 <v-btn
                   :loading="loading"
                   :color="loading ? 'primary' : 'white'"
                   @click="buscarDispositivo"
                   v-if="!paired"
                 >
-                  Buscar
+                  FIND
                 </v-btn>
                 <v-card
                   v-else
@@ -350,19 +351,19 @@ watch(dialog, (value) => {
             <v-btn @click="currentStep--, (paired = false)" />
           </template>
         </v-stepper-vertical-item>
-        <v-stepper-vertical-item :title="`Paso ${isProtected ? '4' : '3'}`"
+        <v-stepper-vertical-item title="Device name"
                                  :icon="isProtected ? 'mdi-numeric-4' : 'mdi-numeric-3'"
                                  :complete="isProtected ? currentStep > 3 : currentStep >= 3">
-          <v-card title="Introduce un nombre para tu dispositivo" flat>
+          <v-card title="Enter a name for your device" flat>
             <v-card-text>
               <v-text-field
                 v-model="deviceName"
                 counter="60"
                 :rules="deviceNameRules"
                 clearable
-                label="Nombre"
-                placeholder="LAMPARA LIVING"
-                hint="Entre 3-60 caracteres"
+                label="Name"
+                placeholder="LIVING LAMP"
+                hint="Between 3-60 characters"
               />
             </v-card-text>
           </v-card>
@@ -371,12 +372,23 @@ watch(dialog, (value) => {
           </template>
         </v-stepper-vertical-item>
 
-        <v-stepper-vertical-item  :title="`Paso ${isProtected ? '5' : '4'}`"
+        <v-stepper-vertical-item v-if="homeStore.home!.meta.houseCode" title="Security settings"
                                   :icon="isProtected ? 'mdi-numeric-5' : 'mdi-numeric-4'"
                                   :complete="isProtected ? currentStep > 4 : currentStep >= 4">
-          <v-card title="Seleccione un icono para su dispositivo" subtitle="Opcional" flat>
-            <v-card>
-              <v-menu>
+          <v-card title="Use your home security PIN for this device" flat>
+            <v-switch v-model="usePin" label="Use PIN" color="primary" class="mx-3"/>
+          </v-card>
+
+          <template v-slot:next>
+            <v-btn  @click="currentStep++" />
+          </template>
+        </v-stepper-vertical-item>
+        <v-stepper-vertical-item  title="Icon"
+                                  :icon="(isProtected ? 'mdi-numeric-6' : (homeStore.home!.meta.houseCode? 'mdi-numeric-5':'mdi-numeric-4'))"
+                                  :complete="isProtected ? currentStep > 5 : currentStep >= 5">
+          <v-card title="Select an icon for your device" subtitle="Optional" flat>
+            <v-card flat>
+              <v-menu transition="scale-transition">
                 <template v-slot:activator="{ props }">
                   <v-btn flat :prepend-icon="`${iconSelected}`" color="secondary" v-bind="props">
                     {{ deviceName }}
@@ -399,16 +411,6 @@ watch(dialog, (value) => {
             </v-card>
           </v-card>
           <template v-slot:next>
-            <v-btn  @click="currentStep++" />
-          </template>
-        </v-stepper-vertical-item>
-        <v-stepper-vertical-item  :title="`Paso ${isProtected ? '6' : '5'}`"
-                                  :icon="isProtected ? 'mdi-numeric-6' : 'mdi-numeric-5'"
-                                  :complete="isProtected ? currentStep > 5 : currentStep >= 5">
-          <v-card title="Utilizar el PIN de seguridad para este dispositvo" flat>
-            <v-switch v-model="usePin" label="Usar código" color="primary" class="mx-3"/>
-          </v-card>
-          <template v-slot:next>
             <v-btn
               :loading="loading"
               :color="error ? 'error' : 'primary'"
@@ -419,7 +421,7 @@ watch(dialog, (value) => {
         </v-stepper-vertical-item>
       </v-stepper-vertical>
       <v-card v-if="error" color="error">{{ error }}</v-card>
-      <v-btn @click="dialog = false">Cancelar</v-btn>
+      <v-btn @click="dialog = false">Cancel</v-btn>
     </v-card>
   </v-dialog>
 </template>

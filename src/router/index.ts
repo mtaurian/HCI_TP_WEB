@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import LandingView from '@/views/LandingView.vue'
 import HomeView from '@/views/HomeView.vue'
 import RoutinesView from '@/views/RoutinesView.vue'
+import FirstSteps from '@/views/FirstSteps.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -35,6 +36,11 @@ const router = createRouter({
       path: '/:pathMatch(.*)*',
       name: 'NotFound',
       component: () => import('../views/NotFound.vue')
+    },
+    {
+      path: '/firststeps',
+      name: 'firststeps',
+      component: FirstSteps
     }
   ]
 })

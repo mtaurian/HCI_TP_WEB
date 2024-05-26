@@ -1,13 +1,18 @@
 <template>
+  <div class="power-button">
     <v-btn
-      max-width="200"
       width="100"
-      height="50"
+      height="100"
       @click="handleOnClick"
       :color="isOn ? 'green-lighten-2' : 'red-lighten-2'"
-      prepend-icon="mdi-power"
       variant="text"
-    >{{ isOn ? 'On' : 'Off' }}</v-btn>
+    >
+      <div class="iconPos">
+        <v-icon class="mb-2" icon="mdi-power" :size="50" />
+      {{ isOn ? 'On' : 'Off' }}
+    </div>
+    </v-btn>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -44,3 +49,20 @@ const handleOnClick = async () => {
   }
 }
 </script>
+<style>
+.power-button{
+  display : flex;
+  margin-right: 20px;
+  flex-direction: column;
+  margin-left: 1rem;
+  align-items: center;
+}
+
+.iconPos{
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Centra los elementos horizontalmente */
+  align-items: center; /* Centra los elementos verticalmente */
+  align-content: center;
+}
+</style>

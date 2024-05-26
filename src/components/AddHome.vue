@@ -15,6 +15,9 @@ const loading = ref(false)
 const error: Ref<string | null> = ref(null)
 const housesNames= (await get_homes()).result.map((item) => item.name)
 const dialog = ref(true)
+defineProps<{
+  mandatory?:boolean
+}>()
 watch(dialog, (value) => {
   if (!value) {
     emit('turnoff')
@@ -58,7 +61,7 @@ async function submit() {
       newHome = await add_home(houseName.value, { houseCode: houseCode.value })
     }
 
-      await router.push({ name: route.name!, params: { home: newHome.result.id } })
+      await router.push({ name: route.name==='firststeps'? 'dashboard':route.name!, params: { home: newHome.result.id } })
 
   } catch (e) {
     handleApiError(e, error)
@@ -94,7 +97,7 @@ const isValidStep2 = computed(() => !isSwitchOn.value || isHouseCodeValid.value)
 </script>
 
 <template>
-  <v-dialog v-model="dialog" width="700">
+  <v-dialog persistent v-model="dialog" width="50%">
     <v-card>
       <v-stepper-vertical v-model="currentStep" theme="light">
         <v-stepper-vertical-item title="Paso 1" value="1" :complete="currentStep > 1">
@@ -157,7 +160,7 @@ const isValidStep2 = computed(() => !isSwitchOn.value || isHouseCodeValid.value)
         </v-stepper-vertical-item>
       </v-stepper-vertical>
       <v-card v-if="error" color="error">{{ error }}</v-card>
-      <v-btn @click="dialog=false">Cancelar</v-btn>
+      <v-btn v-if="!mandatory" @click="dialog=false">Cancelar</v-btn>
     </v-card>
   </v-dialog>
 </template>

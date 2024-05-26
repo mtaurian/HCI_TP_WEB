@@ -4,13 +4,14 @@
       @click="handleOnClick"
       class="ma-2"
       :color="isDock ? 'green-lighten-2' : 'white-lighten-2'"
-      :size="50"
+      height="80"
+      width="200"
       variant="text"
-      :disabled="isDock"
-    >
-      <v-icon icon="mdi-home" :size="50" />
+    ><div class="iconPos">
+      <v-icon class="mb-2" icon="mdi-home" :size="50" />
+      {{isDock ? 'Charging' : 'Go back to dock base'}}
+    </div>
     </v-btn>
-    <v-label>{{isDock ? 'Already in base' : 'Go back to dock base'}}</v-label>
   </div>
 </template>
 
@@ -38,6 +39,9 @@ const handleOnClick = async () => {
   if (!isDock.value){
     await execute_device_action(props.device_id,'dock', []);
     emit('dock-changed');
+  }else{
+    await execute_device_action(props.device_id,'pause', []);
+    emit('dock-changed');
   }
 }
 
@@ -47,9 +51,18 @@ const handleOnClick = async () => {
 
 .home-button{
   display : flex;
+  margin-right: 1rem;
   flex-direction: column;
+  margin-left: 0.5rem;
   align-items: center;
 }
+.iconPos{
+   display: flex;
+   flex-direction: column;
+   justify-content: center; /* Centra los elementos horizontalmente */
+   align-items: center; /* Centra los elementos verticalmente */
+   align-content: center;
+ }
 
 </style>
 

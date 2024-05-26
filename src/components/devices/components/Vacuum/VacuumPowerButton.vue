@@ -4,13 +4,18 @@
       @click="handleOnClick"
       class="ma-2"
       :color="isOn ? 'red-lighten-2' : 'green-lighten-2'"
-      :size="50"
+      height="80"
+      width="100"
       variant="text"
       :disabled="Number(props.state.result?.batteryLevel) < 5 && !isOn"
     >
-      <v-icon icon="mdi-power" :size="50" />
+      <div class="iconPos">
+
+      <v-icon class="mb-2" icon="mdi-power" :size="50" />
+      {{isOn ? 'Off' : (hasBattery() ? 'On' : 'Low Battery')}}
+      </div>
     </v-btn>
-    <v-label>{{isOn ? 'Pause' : (hasBattery() ? 'Start' : 'Low Battery')}}</v-label>
+<!--    <v-label>{{isOn ? 'Pause' : (hasBattery() ? 'Start' : 'Low Battery')}}</v-label>-->
   </div>
   <div>
     <v-snackbar
@@ -102,9 +107,16 @@ const handleOnClick = async () => {
 
 .power-button{
   display : flex;
-  margin-right: 20px;
+  margin-right: 0.5rem;
   flex-direction: column;
+  margin-left: 1rem;
   align-items: center;
 }
-
+.iconPos{
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Centra los elementos horizontalmente */
+  align-items: center; /* Centra los elementos verticalmente */
+  align-content: center;
+}
 </style>
