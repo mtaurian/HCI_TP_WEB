@@ -108,9 +108,10 @@ watch(
         await router.replace({
           name: 'routines' === route.name ? 'routines' : 'dashboard',
           params: {
-            home: housesStore.homes[0]?.id
+            home: localStorage.getItem('last_home') ?? housesStore.homes[0]?.id
           }
         })
+
         return
       }
 
@@ -132,10 +133,12 @@ watch(
       }
 
       initial_home.value = home
+      localStorage.setItem('last_home', home)
 
       if (pinStore.homeId !== home) {
         if (homeStore.home!.meta?.houseCode) {
           pinStore.set(homeStore.home!.id, homeStore.home!.meta.houseCode as string)
+          initial_room.value = null
 
           await router.replace({
             path: `/pin${route.fullPath}`
@@ -153,7 +156,8 @@ watch(
           name: 'dashboard',
           params: {
             home,
-            room: homeStore.rooms[0].id
+            room:
+              JSON.parse(localStorage.getItem('last_room') ?? '{}')[home] ?? homeStore.rooms[0].id
           }
         })
 
@@ -177,6 +181,41 @@ watch(
 
           return
         }
+
+        if (roomStore.devices.length) {
+          const last_devices = JSON.parse(localStorage.getItem('last_device') ?? '{}')
+
+          if (
+            !last_devices[room] ||
+            !roomStore.devices.find((device) => device.id === last_devices[room])
+          ) {
+            last_devices[room] = roomStore.devices[0].id
+          }
+
+          await deviceStore.setCurrentDevice(last_devices[room])
+
+          // TODO: 500 page
+          if (deviceStore.error) {
+            console.error('Error fetching device data', deviceStore.error)
+
+            await router.replace({
+              name: 'NotFound',
+              // preserve current path and remove the first char to avoid the target URL starting with `//`
+              params: { pathMatch: route.path.substring(1).split('/') },
+              // preserve existing query and hash if any
+              query: route.query,
+              hash: route.hash
+            })
+
+            return
+          }
+
+          localStorage.setItem('last_device', JSON.stringify(last_devices))
+        }
+
+        const rooms = JSON.parse(localStorage.getItem('last_room') ?? '{}')
+        rooms[home] = room
+        localStorage.setItem('last_room', JSON.stringify(rooms))
       } else {
         roomStore.room = null
       }
@@ -230,9 +269,10 @@ watch(
         await router.replace({
           name: 'routines' === route.name ? 'routines' : 'dashboard',
           params: {
-            home: housesStore.homes[0]?.id
+            home: localStorage.getItem('last_home') ?? housesStore.homes[0]?.id
           }
         })
+
         return
       }
 
@@ -253,24 +293,52 @@ watch(
         return
       }
 
-      await routineStore.setCurrentRoutine(homeStore.routines[0].id)
+      initial_home.value = home
+      localStorage.setItem('last_home', home)
 
-      if (routineStore.error) {
-        console.error('Error fetching routine data', routineStore.error)
+      if (pinStore.homeId !== home) {
+        if (homeStore.home!.meta?.houseCode) {
+          pinStore.set(homeStore.home!.id, homeStore.home!.meta.houseCode as string)
 
-        await router.replace({
-          name: 'NotFound',
-          // preserve current path and remove the first char to avoid the target URL starting with `//`
-          params: { pathMatch: route.path.substring(1).split('/') },
-          // preserve existing query and hash if any
-          query: route.query,
-          hash: route.hash
-        })
+          await router.replace({
+            path: `/pin${route.fullPath}`
+          })
 
-        return
+          return
+        } else {
+          pinStore.set(home, null)
+        }
       }
 
-      initial_home.value = home
+      if (homeStore.routines.length) {
+        const last_routines = JSON.parse(localStorage.getItem('last_routine') ?? '{}')
+
+        if (
+          !last_routines[home] ||
+          !homeStore.routines.find((routine) => routine.id === last_routines[home])
+        ) {
+          last_routines[home] = homeStore.routines[0].id
+        }
+
+        await routineStore.setCurrentRoutine(last_routines[home])
+
+        if (routineStore.error) {
+          console.error('Error fetching routine data', routineStore.error)
+
+          await router.replace({
+            name: 'NotFound',
+            // preserve current path and remove the first char to avoid the target URL starting with `//`
+            params: { pathMatch: route.path.substring(1).split('/') },
+            // preserve existing query and hash if any
+            query: route.query,
+            hash: route.hash
+          })
+
+          return
+        }
+
+        localStorage.setItem('last_routine', JSON.stringify(last_routines))
+      }
     }
   },
   { immediate: true }
@@ -311,8 +379,10 @@ function goToRoutinesEditor() {
 }
 
 function goToDevices() {
-  const home = route.params.home
-  router.push({ name: 'dashboard', params: { home } })
+  const home = route.params.home as string
+  const room = JSON.parse(localStorage.getItem('last_room') ?? '{}')[home]
+
+  router.push({ name: 'dashboard', params: { home, room } })
 }
 </script>
 

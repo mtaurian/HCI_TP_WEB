@@ -1,19 +1,22 @@
 <script setup lang="ts">
-import { watch } from 'vue'
 import DeviceCard from './DeviceCard.vue'
 import { useRoomStore, useDeviceStore } from '@/stores'
 
 const roomStore = useRoomStore()
 const deviceStore = useDeviceStore()
 
-watch(
-  () => roomStore.devices,
-  () => {
-    if (roomStore.devices.length) {
-      deviceStore.setCurrentDevice(roomStore.devices[0].id)
-    }
+async function set_device(id: string) {
+  try {
+    await deviceStore.setCurrentDevice(id)
+  } catch (error) {
+    alert('Error setting device')
+    return
   }
-)
+
+  const devices = JSON.parse(localStorage.getItem('last_device') ?? '{}')
+  devices[roomStore.room!.id] = id
+  localStorage.setItem('last_device', JSON.stringify(devices))
+}
 </script>
 
 <template>
@@ -25,10 +28,10 @@ watch(
       :key="item.id"
       :deviceName="item.name"
       :state="`${item.state.status}`"
-      stateIcon="item.stateIcon"
+      :stateIcon="`${item.meta.deviceIcon}`"
       :isActive="item.id === deviceStore.device?.id"
       :id="item.id"
-      @click="deviceStore.setCurrentDevice(item.id)"
+      @click="set_device"
     />
   </div>
 </template>
