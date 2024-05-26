@@ -73,12 +73,12 @@ main {
 }
 
 .controller > div {
-  width: 80%;
+  width: 95%;
   height: 80%;
 }
-@media screen and (max-width:1024px){
+@media screen and (max-width:1440px){
   .controller > div {
-    width: 95%;
+    width: 98%;
     height: 80%;
   }
 }

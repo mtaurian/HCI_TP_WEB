@@ -12,7 +12,14 @@ defineEmits<{
 }>()
 
 const handleExecute = async () => {
+
+
+  const vacuumRules = [
+
+  ]
+
   try {
+
     await execute_routine(props.routine.id);
   } catch (error){
     alert("something went wrong" )

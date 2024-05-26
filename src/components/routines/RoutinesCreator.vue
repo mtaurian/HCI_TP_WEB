@@ -27,7 +27,7 @@ watchEffect( async () => {
       selectedAction: action.actionName,
       selectedActionParams: action.params,
       actions: deviceType.result?.actions.map((a) => a.name),
-      id : Date.now() +i
+      id : Date.now() +i + Math.floor(Math.random() * 10000)
     }
   }))
   rows.value = rowsData
@@ -206,6 +206,7 @@ const handleDown = (index : number) => {
           <v-col cols="12" sm="3" class="column">
             <div class="action">
               <DeviceActionsByAction
+                :key="row.id + row.selectedAction + row.selectedDevice"
                 :device_action-name="rows[index].selectedAction"
                 :device_type_name="rows[index].selectedDevice.type.name"
                 @response="(param) => handleResponse(param, index, 0)"
@@ -285,9 +286,9 @@ const handleDown = (index : number) => {
   grid-template-rows: 10% 1fr 20%;
 }
 
-@media screen and (max-width:1024px){
+@media screen and (max-width:1352px){
   .black-square  {
-    padding: 2.2rem 0.5rem;
+    padding: 2.2rem 0.8rem;
   }
 }
 
@@ -315,8 +316,8 @@ const handleDown = (index : number) => {
 }
 
 .column {
-  margin-right: 1rem;
-  margin-left: 1rem;
+  margin-right: 0.5rem;
+  margin-left: 0.5rem;
 }
 
 .actions {
@@ -359,7 +360,7 @@ const handleDown = (index : number) => {
   justify-content: space-between;
 }
 
-@media screen and (max-width: 1024px) {
+@media screen and (max-width: 1352px) {
   .select>* {
     width: 200px;
   }

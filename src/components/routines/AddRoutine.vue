@@ -62,6 +62,7 @@
             <v-col cols="12" sm="3" class="column">
               <div class="action">
                 <DeviceActionsByAction
+                  :key="row.id + row.selectedAction + row.selectedDevice"
                   :device_action-name="row.selectedAction"
                   :device_type_name="row.selectedDevice.type.name"
                   @response="(param) => handleResponce(param, index, 0)"
@@ -145,7 +146,7 @@ const routines = (await get_routines()).result.map((r) => r.name)
 type rowType = {selectedDevice : Device, selectedAction : string, selectedActionParams : (string | number)[], actions : string[], id : number}
 
 const rows = ref<rowType[]>([
-  { selectedDevice: devices[0], selectedAction: '', selectedActionParams : [] ,actions: [''] , id : Date.now()},
+  { selectedDevice: devices[0], selectedAction: '', selectedActionParams : [] ,actions: [''] , id : Date.now()+Math.floor(Math.random() * 10000)},
 ])
 
 const scrollToSection = (sectionId: string) => {
@@ -156,7 +157,7 @@ const scrollToSection = (sectionId: string) => {
 };
 
 const addRow = async () => {
-  rows.value.push({ selectedDevice: devices[0], selectedAction: '', selectedActionParams :  [], actions: [''] , id : Date.now()})
+  rows.value.push({ selectedDevice: devices[0], selectedAction: '', selectedActionParams :  [], actions: [''] , id : Date.now()  + Math.floor(Math.random() * 10000)})
   await onUpdateDevice(devices[0], rows.value.length - 1)
   scrollToSection('endOfRegion2')
 }

@@ -48,7 +48,7 @@
   </div>
   <div class="dispense" v-if="props.device_actionName===ActionsEnum.DISPENSE">
     <div class="slider-Group">
-    <v-slider :model-value="slider" :step="1" :min="0" :max="100"
+    <v-slider :model-value="slider" :step="1" :min="1" :max="100"
               @update:modelValue="emitResponseSlider"
               thumb-label="always"
     >
@@ -65,7 +65,7 @@
     />
   </div>
   <div class="slider-Group" v-if="props.device_actionName===ActionsEnum.SETTEMPERATURE">
-    <v-slider :min="props.device_type_name === 'ac' ? 18 : 90" :max="props.device_type_name === 'ac' ? 38 : 230" :step="1"
+    <v-slider :min="props.device_type_name === 'ac' ? 18 : ((props.device_type_name === 'oven') ? 90 : 2)" :max="props.device_type_name === 'ac' ? 38 : ((props.device_type_name === 'oven') ? 230 : 8)" :step="1"
               @update:modelValue="emitResponseSlider" thumb-label="always"
               :model-value="slider"
     >
@@ -80,11 +80,23 @@
             label="Select heat"
             :items="[ 'conventional', 'bottom', 'top']"
   />
+  <v-select v-if="device_actionName===ActionsEnum.SETGRILL"
+            @update:modelValue="(val) => {emitResponse(val) ; updateSelected(val)}"
+            :model-value="select"
+            label="Select grill"
+            :items="[ 'large', 'eco', 'off']"
+  />
+  <v-select v-if="device_actionName===ActionsEnum.SETCONVECTION"
+            @update:modelValue="(val) => {emitResponse(val) ; updateSelected(val)}"
+            :model-value="select"
+            label="Select convection"
+            :items="[ 'normal', 'eco', 'off']"
+  />
   <v-select v-if="device_actionName===ActionsEnum.SETMODE"
             @update:modelValue="(val) => {emitResponse(val) ; updateSelected(val)}"
             :model-value="select"
             label="Select Mode"
-            :items="device_type_name==='vacuum' ? ['vacuum', 'mop'] : (device_type_name === 'refrigerator') ? [ 'cool', 'heat', 'fan'] : ['default', 'vacation', 'party']"
+            :items="device_type_name==='vacuum' ? ['vacuum', 'mop'] : (device_type_name === 'refrigerator') ? ['default', 'vacation', 'party'] :  [ 'cool', 'heat', 'fan'] "
   />
   <v-select v-if="device_actionName===ActionsEnum.SETVERTICALSWING"
             @update:modelValue="(val) => {emitResponse(val) ; updateSelected(val)}"
@@ -136,31 +148,47 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits(['response', 'response2']);
+const homeStore = useHomeStore()
 
 let done = false;
+const minSliderMap = {ac : 18, refrigerator : 2, oven : 90, lamp : 0, faucet : 1, blinds : 0}
+
+const defaultSelect = {
+  setMode : {vacuum : 'vacuum', ac : 'cool', refrigerator : 'default'},
+  dispense : {faucet : 'ml'},
+  setHeat : {oven : 'conventional'},
+  setVerticalSwing : {ac : 'auto'},
+  setHorizontalSwing : {ac : 'auto'},
+  setFanSpeed : {ac : 'auto'},
+  setLocation : {vacuum : homeStore.rooms[0]},
+  setGrill : {oven : 'large'},
+  setConvection : {oven : 'normal'}
+}
 
 watchEffect(() => {
   console.log("props: ", props.theParams)
-  if (!props.theParams && !done){
+  if (!props.theParams && !done) {
     done = true
     const action = props.device_actionName
     if (action === ActionsEnum.SETBRIGHTNESS ||
-        action === ActionsEnum.SETLEVEL ||
-        action === ActionsEnum.DISPENSE
+      action === ActionsEnum.SETLEVEL ||
+      action === ActionsEnum.SETTEMPERATURE
     ) {
-      emit('response', 0);
+      emit('response', minSliderMap[props.device_type_name])
+    } else if (action === ActionsEnum.DISPENSE) {
+      emit('response', minSliderMap['faucet'])
+      emit('response2', defaultSelect[ActionsEnum.DISPENSE]['faucet'])
+    } else if (action === ActionsEnum.SETCOLOR) {
+      emit('response', 'FFFFFF')
+    } else if (action === ActionsEnum.SETFREEZERTEMPERATURE) {
+      emit('response', 0)
+    } else if (defaultSelect[props.device_actionName]) {
+      emit('response', defaultSelect[props.device_actionName][props.device_type_name])
     }
-    else if ( action === ActionsEnum.SETTEMPERATURE && props.device_type_name === 'ac'){
-      emit('response', 18);
-    } else if (action === ActionsEnum.SETTEMPERATURE){
-      emit('response', 90);
-    } else if (action === ActionsEnum.SETCOLOR){
-      emit('response', 'FFFFFF');
-    }
+
   }
 }, )
 
-const homeStore = useHomeStore()
 
 const selectedColor = ref(
   (props.theParams
@@ -169,17 +197,22 @@ const selectedColor = ref(
 
 const oldColor = ref('')
 
+
+
 const select = ref(
   (props.theParams
     && props.theParams.length > 0
-  ) ? ((typeof props.theParams[0] == 'string') ? props.theParams[0] : ((props.theParams.length > 1 && typeof props.theParams[1] == 'string') ? props.theParams[1] : '')) : '')
+  ) ? ((typeof props.theParams[0] == 'string') ? props.theParams[0] : ((props.theParams.length > 1 && typeof props.theParams[1] == 'string') ? props.theParams[1] :
+      defaultSelect[props.device_actionName] ? defaultSelect[props.device_actionName][props.device_type_name] ?? '' : '')) :
+    defaultSelect[props.device_actionName] ? defaultSelect[props.device_actionName][props.device_type_name] ?? '' : '')
 
 const updateSelected = (val : string) => {
   select.value = val;
 }
+
+console.log(props.theParams)
 const slider = ref((props.theParams
-  && props.theParams.length > 0
-  ) ? ((typeof props.theParams[0] == 'number') ? props.theParams[0] : ((props.theParams.length > 1 && typeof props.theParams[1] == 'number') ? props.theParams[1] : 0)) : 0)
+  ) ? ((typeof props.theParams[0] === 'number') ? props.theParams[0] : ((typeof props.theParams[1] === 'number') ? props.theParams[1] : minSliderMap[props.device_type_name as keyof typeof minSliderMap])) : minSliderMap[props.device_type_name as keyof typeof minSliderMap])
 
 const onColorPickerSave = () => {
   emit("response", selectedColor.value.slice(1))
@@ -207,11 +240,6 @@ const emitResponse2 = (rta : string | number |  null)=>{
   if(rta===null) return
   emit("response2", rta)
 }
-
-
-
-
-
 
 
 enum ActionsEnum {
