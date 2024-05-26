@@ -46,7 +46,7 @@
   </main>
 
 
-  <v-fab class="v-fab" @click="onAddRoutine" size="x-large" extended color="white" prepend-icon="mdi-plus" text="Routine"></v-fab>
+  <v-fab class="v-fab" :disabled="homeStore.devices.length<=0" @click="onAddRoutine" size="x-large" extended color="white" prepend-icon="mdi-plus" text="Routine"></v-fab>
 </template>
 
 

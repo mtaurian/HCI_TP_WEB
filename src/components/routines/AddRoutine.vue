@@ -3,14 +3,7 @@
 <template>
   <v-stepper  class="stepper" max-width="70rem" theme="light" :items="steps" hide-actions v-model="currentStep">
     <template v-slot:item.1>
-      <v-card title="Step One" flat>
-        <v-select
-          v-model="selectedHome"
-          :items="allHousesStore.homes"
-          :item-value="item => item.id"
-          :item-title="item => item.name"
-          label="Select home"
-        />
+      <v-card title="Routine Name" flat>
         <v-text-field
           v-model="routineName"
           :rules="rules"
@@ -89,7 +82,7 @@
 
     <template v-slot:item.3>
       <v-card title="Step Three" flat></v-card>
-      <p>Are you sure you want to create the "{{routineName}}" routine for  "{{selectedHome?.name}}"?</p>
+      <p>Are you sure you want to create the "{{routineName}}" routine for  "{{homeStore.home?.name}}"?</p>
       <p>Please keep in mind that if the devices you selected have a security pin assigned, this will be requested when executing the routine.</p>
       <div class="actions">
         <v-btn color="error" class="cancel" @click="() => dialog = true">Cancel</v-btn>
@@ -131,7 +124,7 @@ import { useAllHousesStore, useHomeStore } from '@/stores'
 import { add_routine, type ApiActionToPost, type Device, get_device_type, get_routines } from '@/api'
 import DeviceActionsByAction from '@/components/routines/DeviceActionsByAction.vue'
 
-const steps = ref(['Home & Name', 'Actions!', 'Confirm'])
+const steps = ref(['Name', 'Actions!', 'Confirm'])
 const currentStep = ref(1)
 const emit = defineEmits(['closedOrCanceled']);
 const allHousesStore = useAllHousesStore()
@@ -140,7 +133,6 @@ const devices = homeStore.devices
 const routineName = ref('')
 const isValid = ref(false)
 const dialog = ref(false);
-const selectedHome = ref(homeStore.home)
 const routines = (await get_routines()).result.map((r) => r.name)
 
 type rowType = {selectedDevice : Device, selectedAction : string, selectedActionParams : (string | number)[], actions : string[], id : number}
@@ -196,7 +188,7 @@ const onSubmit = () => {
       })
   })
 
-  add_routine(routineName.value, theRoutineActions, {house_id : selectedHome.value?.id})
+  add_routine(routineName.value, theRoutineActions, {house_id : homeStore.home.id})
  //TODO un deshacer de la rutinas
 
   homeStore.invalidate();
