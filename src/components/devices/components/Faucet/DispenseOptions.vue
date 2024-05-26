@@ -10,7 +10,7 @@ const emit = defineEmits<{
   change: [number, string]
 }>()
 
-const amount = ref(0)
+const amount = ref(1)
 const unit = ref('ml')
 
 watch([amount, unit], () => {
