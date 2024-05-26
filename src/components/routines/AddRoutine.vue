@@ -71,11 +71,11 @@
           </v-row>
         </v-container>
           <div id="endOfRegion2"/>
-        <v-btn class="ma-4" @click="addRow" color="primary">Add Action</v-btn>
+        <v-btn class="ma-4" @click="addRow" color="secondary">Add Action</v-btn>
         <div class="actions">
           <v-btn color="error" class="cancel" @click="() => dialog = true">Cancel</v-btn>
           <div>
-            <v-btn color="white" class="buttons" border @click="onPrevious">Previous</v-btn>
+            <v-btn  class="buttons" border @click="onPrevious">Previous</v-btn>
             <v-btn color="secondary" class="buttons" @click="onNext">Next</v-btn>
           </div>
         </div>
@@ -84,8 +84,8 @@
 
     <template v-slot:item.3>
       <v-card title="Step Three" flat></v-card>
-      <p>Are you sure you want to create the "{{routineName}}" routine for  "{{homeStore.home?.name}}"?</p>
-      <p>Please keep in mind that if any of the devices you selected
+      <p class="ml-4">Are you sure you want to create the "{{routineName}}" routine for  "{{homeStore.home?.name}}"?</p>
+      <p class="ml-4">Please keep in mind that if any of the devices you selected
         are PIN protected, the routine will be PIN protected too.
       </p>
       <div class="actions">
@@ -270,7 +270,9 @@ onMounted(() => {
 .item {
   margin-top: 1.5rem;
 }
-
+.cancel{
+  margin-left : 0.5rem
+}
 .container {
   overflow-y: auto;
   max-height: 30rem;

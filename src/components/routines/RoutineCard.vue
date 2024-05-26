@@ -118,7 +118,7 @@ const handleExecute = async () => {
         <v-card-title>Confirm Routine Run</v-card-title>
       </div>
       <div class="dialog">
-        <p>Are you sure you want to run "{{routine.name}} routine"?</p>
+        <p>Are you sure you want to run "{{routine.name}}" routine?</p>
       </div>
       <div class="dialogActions">
         <v-card-actions class="dialogActions">
