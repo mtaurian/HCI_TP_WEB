@@ -1,6 +1,6 @@
 <template>
   <div class="title">
-    <p class="font-weight-black" size="70">Vertical Swing</p>
+    <span class="span">Vertical Swing</span>
   </div>
   <v-row>
     <v-col class="slider">
@@ -68,16 +68,19 @@ const handleAutoOnChange = async () => {
 
 <style scoped>
 .title{
-  margin-bottom: 10px;
+  margin-bottom: 3rem;
 }
 .slider{
   display : flex;
-  margin-left: 5px;
-  margin-right: 20px;
+  margin-left: 1.5rem;
+  margin-right: 2rem;
   flex-direction: column;
   justify-content: center;
   justify-items: center;
   gap: 1rem;
+}
+.span{
+  margin-bottom: 2rem;
 }
 
 </style>

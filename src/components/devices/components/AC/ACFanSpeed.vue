@@ -1,6 +1,6 @@
 <template>
   <div class="title">
-    <p class="font-weight-black" size="70">Fan Speed</p>
+    <span class="span">Fan Speed</span>
   </div>
   <v-col class="d-flex justify-space-around">
     <v-btn-toggle
@@ -57,6 +57,9 @@ const handleOnClick = async (newSpeed: string) => {
 
 <style scoped>
 .title{
-  margin-bottom: 10px;
+  margin-bottom: 1rem;
+}
+.span{
+  margin-bottom: 2rem;
 }
 </style>

@@ -77,9 +77,10 @@ async function click() {
         </div>
       </v-btn>
     </div>
+    <span class="span">Height</span>
     <v-slider
+      class="slider"
       v-if="open && !moving"
-      label="Height"
       v-model="height"
       :min="0"
       :max="100"
@@ -98,3 +99,13 @@ async function click() {
     </div>
   </div>
 </template>
+
+<style>
+.slider {
+  margin-top: 2rem;
+  margin-left: 3.5rem;
+}
+.span{
+  margin-bottom: 20px;
+}
+</style>

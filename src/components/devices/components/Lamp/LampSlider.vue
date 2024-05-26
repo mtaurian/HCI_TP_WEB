@@ -1,6 +1,6 @@
 <template>
 <div class="devices">
-  <v-label><strong>Brightness</strong></v-label>
+  <span class="span">Brightness</span>
     <v-slider
       direction="vertical"
       v-model="brightness"
@@ -38,10 +38,7 @@ const handleOnChange = async () => {
 }
 </script>
 <style>
-.slider{
-  display : flex;
-  flex-direction: column;
-  justify-content: center;
-  justify-items: center;
+.span{
+  margin-bottom: 2rem;
 }
 </style>

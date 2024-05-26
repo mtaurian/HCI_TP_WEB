@@ -20,8 +20,8 @@ watch([amount, unit], () => {
 
 <template>
   <div class="slider" v-if="!dispensing">
+    <span class="span">Amount</span>
     <v-slider
-      label="Amount"
       v-model="amount"
       :min="1"
       :max="100"
@@ -53,6 +53,10 @@ watch([amount, unit], () => {
   flex-direction: row;
   align-items: center;
   gap: 1rem;
+  margin-left: 1rem;
+}
+.span{
+  margin-bottom: 20px;
 }
 
 .slider > .unit {
@@ -62,7 +66,7 @@ watch([amount, unit], () => {
 .progress {
   display: flex;
   flex-direction: column;
-  align-items: left;
+  align-items: normal;
   gap: 0.8rem;
 }
 </style>
