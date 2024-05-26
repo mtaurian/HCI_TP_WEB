@@ -1,11 +1,10 @@
 <template>
-  <div class="color-picker">
-    <v-color-picker :model-value="currentColor"
-                    @update:model-value="handleOnChange" mode="rgba"
-                    canvas-height="80"
-                    width="300">
+    <v-color-picker
+      :model-value="currentColor"
+      @update:model-value="handleOnChange"
+      mode="rgba"
+                    >
     </v-color-picker>
-  </div>
 </template>
 
 <script setup lang="ts">
@@ -43,10 +42,3 @@ const handleOnChange = async (newColor: string) => {
   }
 }
 </script>
-
-<style scoped>
-.color-picker {
-  display: flex;
-  flex-direction: column;
-}
-</style>

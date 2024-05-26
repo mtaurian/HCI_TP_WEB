@@ -1,9 +1,10 @@
 <template>
-  <div class="brightness-slider">
+  <div class="title">
+    <p class="font-weight-black" size="70">Brightness</p>
+  </div>
     <v-slider
-      label="Brightness"
+      direction="vertical"
       v-model="brightness"
-      width="300"
       :min="0"
       :max="100"
       :step="1"
@@ -15,7 +16,6 @@
         <p class="text-accent">{{ brightness }}%</p>
       </template>
     </v-slider>
-  </div>
 </template>
 
 <script setup lang="ts">
@@ -37,15 +37,3 @@ const handleOnChange = async () => {
   emit('brightness-slider')
 }
 </script>
-
-<style scoped>
-
-.brightness-slider{
-  display : flex;
-  margin-right: 20px;
-  flex-direction: column;
-  justify-content: center;
-  justify-items: center;
-}
-
-</style>

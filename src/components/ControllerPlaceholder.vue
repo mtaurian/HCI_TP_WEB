@@ -140,11 +140,11 @@ watch(
         ></v-select>
       </div>
       <div class="button">
-        <v-btn @click="$emit('delete')" color="tonal">
+        <v-btn @click="$emit('delete')" color="primary">
           <template #prepend>
             <v-icon>mdi-delete</v-icon>
           </template>
-          Eliminar
+          Delete
         </v-btn>
       </div>
     </div>
