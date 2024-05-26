@@ -57,9 +57,12 @@ onMounted(async () => {
 .power {
   margin-right: 2rem;
 }
+
 .row {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  margin-left: 1rem;
 }
+
 </style>

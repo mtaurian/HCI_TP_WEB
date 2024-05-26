@@ -39,6 +39,7 @@ const handleOnChange = async (newTemperature: number) => {
   flex-direction: column;
   justify-content: center;
   justify-items: center;
+  max-width: 10rem;
 }
 
 </style>

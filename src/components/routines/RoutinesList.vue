@@ -39,7 +39,6 @@ async function set_routine(id: string) {
   flex-direction: column;
   gap: 20px;
   max-height: 80vh;
-  border-radius: 10px;
   overflow-y: auto;
 }
 </style>

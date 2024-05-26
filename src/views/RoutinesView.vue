@@ -7,9 +7,19 @@
     <div class="separator"></div>
 
     <div class="controller">
-      <div>
+      <div class="placeHolder">
         <RoutinesCreator
         @delete="() => deleteDialog = true"
+        />
+      </div>
+      <div class="fab">
+        <v-btn height="50"  rounded
+               @click="onAddRoutine"
+               size=""
+               color="white"
+               prepend-icon="mdi-plus"
+               text="ROUTINE"
+               width="150"
         />
       </div>
     </div>
@@ -43,10 +53,11 @@
         </div>
       </v-card>
     </v-dialog>
+
+
   </main>
 
 
-  <v-fab class="v-fab" :disabled="homeStore.devices.length<=0" @click="onAddRoutine" size="x-large" extended color="white" prepend-icon="mdi-plus" text="Routine"></v-fab>
 </template>
 
 
@@ -67,17 +78,20 @@ main {
 
 .controller {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
+  gap : 2rem;
   width: 100%;
 }
 
-.controller > div {
+.controller > .placeHolder {
   width: 95%;
   height: 80%;
 }
+
 @media screen and (max-width:1440px){
-  .controller > div {
+  .controller > .placeHolder {
     width: 98%;
     height: 80%;
   }
@@ -93,11 +107,10 @@ main {
   align-items: center;
 }
 
-.v-fab {
-  position: fixed; /* Change position to fixed */
-  bottom: 5rem; /* Position it 16px from the bottom */
-  right: 15rem; /* Position it 16px from the right */
-  z-index: 1000; /* Ensure it is on top of other elements */
+.controller > .fab{
+  width : 90%;
+  display : flex;
+  justify-content: right;
 }
 
 .list {
