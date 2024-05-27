@@ -33,14 +33,19 @@ const router = createRouter({
       component: RoutinesView
     },
     {
+      path: '/firststeps',
+      name: 'firststeps',
+      component: FirstSteps
+    },
+    {
       path: '/:pathMatch(.*)*',
       name: 'NotFound',
       component: () => import('../views/NotFound.vue')
     },
     {
-      path: '/firststeps',
-      name: 'firststeps',
-      component: FirstSteps
+      path: '/:pathMatch(.*)*',
+      name: 'UpsView',
+      component: () => import('../views/UpsView.vue')
     }
   ]
 })

@@ -3,9 +3,9 @@ import router from '@/router'
 
 const data = localStorage.getItem('user_data')
 if (data) {
-  router.replace({name:'dashboard'})
+  router.replace({ name: 'dashboard' })
 }
-localStorage.setItem('user_data','1')
+localStorage.setItem('user_data', '1')
 </script>
 
 <template>
@@ -13,7 +13,7 @@ localStorage.setItem('user_data','1')
     <header>
       <img src="@/assets/logo.png" alt="logo" />
       <h1>Simplifying your dream home</h1>
-      <v-btn to="firststeps" size="x-large" class="bg-surface">START NOW</v-btn>
+      <v-btn to="dashboard" size="x-large" class="bg-surface">START NOW</v-btn>
     </header>
 
     <v-expansion-panels variant="accordion">
@@ -27,8 +27,7 @@ localStorage.setItem('user_data','1')
       ></v-expansion-panel>
       <v-expansion-panel
         title="What platforms are compatible with EasyLife Home?"
-        text=
-          "All of them! You can use Google Chrome Microsoft Edge and Mozilla Firefox."
+        text="All of them! You can use Google Chrome Microsoft Edge and Mozilla Firefox."
       ></v-expansion-panel>
     </v-expansion-panels>
   </main>

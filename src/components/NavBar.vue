@@ -74,9 +74,8 @@ watch(
       if (housesStore.error) {
         console.error('Error fetching data', housesStore.error)
 
-        // TODO: 500 page
         await router.replace({
-          name: 'NotFound',
+          name: 'UpsView',
           // preserve current path and remove the first char to avoid the target URL starting with `//`
           params: { pathMatch: route.path.substring(1).split('/') },
           // preserve existing query and hash if any
@@ -87,17 +86,12 @@ watch(
         return
       }
 
-      // If there are no homes available, redirect to NotFound (TODO: Add first house flow)
+      // If there are no homes available, redirect to firststeps
       if (!housesStore.homes?.length) {
         console.error('No homes available')
 
         await router.replace({
-          name: 'NotFound',
-          // preserve current path and remove the first char to avoid the target URL starting with `//`
-          params: { pathMatch: route.path.substring(1).split('/') },
-          // preserve existing query and hash if any
-          query: route.query,
-          hash: route.hash
+          name: 'firststeps'
         })
 
         return
@@ -194,12 +188,11 @@ watch(
 
           await deviceStore.setCurrentDevice(last_devices[room])
 
-          // TODO: 500 page
           if (deviceStore.error) {
             console.error('Error fetching device data', deviceStore.error)
 
             await router.replace({
-              name: 'NotFound',
+              name: 'UpsView',
               // preserve current path and remove the first char to avoid the target URL starting with `//`
               params: { pathMatch: route.path.substring(1).split('/') },
               // preserve existing query and hash if any
@@ -235,9 +228,8 @@ watch(
       if (housesStore.error) {
         console.error('Error fetching data', housesStore.error)
 
-        // TODO: 500 page
         await router.replace({
-          name: 'NotFound',
+          name: 'UpsView',
           // preserve current path and remove the first char to avoid the target URL starting with `//`
           params: { pathMatch: route.path.substring(1).split('/') },
           // preserve existing query and hash if any
@@ -248,17 +240,12 @@ watch(
         return
       }
 
-      // If there are no homes available, redirect to NotFound (TODO: Add first house flow)
+      // If there are no homes available, redirect to firststeps
       if (!housesStore.homes?.length) {
         console.error('No homes available')
 
         await router.replace({
-          name: 'NotFound',
-          // preserve current path and remove the first char to avoid the target URL starting with `//`
-          params: { pathMatch: route.path.substring(1).split('/') },
-          // preserve existing query and hash if any
-          query: route.query,
-          hash: route.hash
+          name: 'firststeps'
         })
 
         return
