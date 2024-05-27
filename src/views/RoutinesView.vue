@@ -65,8 +65,8 @@
     </v-dialog>
   </main>
   <div class="deviceless" v-else>
-    <p>¡Esta casa no tiene dispositivos!</p>
-    <p>Para agregar una rutina necesitás al menos 1 dispositivo</p>
+    <p>This house doesn't have devices!</p>
+    <p>In order to use the routines, you need at least one device</p>
   </div>
 </template>
 
@@ -80,6 +80,7 @@ main {
 
 .deviceless {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   height: 100%;
