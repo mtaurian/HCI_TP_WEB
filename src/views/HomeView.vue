@@ -92,7 +92,7 @@ const confirmPrompt = ref(false as false | string)
 <template>
   <AddDevice v-if="new_device_dialog" @turnoff="closeDialog" />
 
-  <main v-if="roomStore.room" :class="!deviceStore.device? 'roomless':''">
+  <main v-if="roomStore.room" :class="!deviceStore.device ? 'roomless' : ''">
     <div class="list">
       <DevicesList />
     </div>
@@ -106,7 +106,7 @@ const confirmPrompt = ref(false as false | string)
           @delete="deleteDialog = true"
         />
         <div v-else class="roomless">
-          <img class="no_device" src="/no_room.png"/>
+          <img class="no_device" src="/no_room.png" alt="No devices" />
           <p>This room doesn't have any device! Try adding one to get started!</p>
         </div>
       </div>
@@ -292,7 +292,7 @@ main {
   max-height: 60%;
   max-width: 60%;
 }
-.no_device{
+.no_device {
   max-height: 80%;
   max-width: 80%;
 }
