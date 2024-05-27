@@ -3,9 +3,9 @@ import router from '@/router'
 
 const data = localStorage.getItem('user_data')
 if (data) {
-  const user = JSON.parse(data)
-  router.push(`/dashboard/${user.last_home}/${user.last_room}`)
+  router.replace({name:'dashboard'})
 }
+localStorage.setItem('user_data','1')
 </script>
 
 <template>
@@ -13,7 +13,7 @@ if (data) {
     <header>
       <img src="@/assets/logo.png" alt="logo" />
       <h1>Simplifying your dream home</h1>
-      <v-btn to="dashboard" size="x-large" class="bg-surface">START NOW</v-btn>
+      <v-btn to="firststeps" size="x-large" class="bg-surface">START NOW</v-btn>
     </header>
 
     <v-expansion-panels variant="accordion">

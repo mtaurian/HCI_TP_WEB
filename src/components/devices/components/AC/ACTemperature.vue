@@ -1,6 +1,6 @@
 <template>
   <div class="temp-input">
-    <p class="font-weight-black" size="70">Temperature</p>
+    <span class="span">Temperature</span>
     <v-number-input
       :min="18"
       :max="38"
@@ -40,6 +40,9 @@ const handleOnChange = async (newTemperature: number) => {
   justify-content: center;
   justify-items: center;
   max-width: 10rem;
+}
+.span{
+  margin-bottom: 2rem;
 }
 
 </style>

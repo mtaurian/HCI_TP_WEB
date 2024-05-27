@@ -97,6 +97,18 @@ const isHouseCodeValid = computed(() => {
 
 const isValidStep1 = computed(() => isHouseNameValid.value)
 const isValidStep2 = computed(() => !isSwitchOn.value || isHouseCodeValid.value)
+
+const valid = ref(true)
+function save_pin(n:any) {
+  houseCode.value=n
+}
+function on_change(n: string) {
+  if (n.length !== 4) {
+    // Oh, the irony
+    houseCode.value=null
+    valid.value = true
+  }
+}
 </script>
 
 <template>
@@ -120,20 +132,20 @@ const isValidStep2 = computed(() => !isSwitchOn.value || isHouseCodeValid.value)
           <template v-slot:next>
             <v-btn :disabled="!isValidStep1" @click="currentStep++" />
           </template>
+          <template v-slot:prev></template>
         </v-stepper-vertical-item>
         <v-stepper-vertical-item title="Security settings" value="2" :complete="currentStep > 2">
           <v-card title="Use your home security PIN for this device" flat>
             <v-card>
               <v-card-text>
                 <v-switch v-model="isSwitchOn" label="Use PIN" color="primary" />
-                <v-text-field
+                <v-otp-input
                   v-if="isSwitchOn"
-                  v-model="houseCode"
-                  label="PIN"
-                  :rules=houseCodeRules
-                  clearable
-                  placeholder="1234"
-                  suffix="Must be 4 characters long"
+                  :length="4"
+                  :error="!valid"
+                  variant="outlined"
+                  @finish="save_pin"
+                  @update:model-value="on_change"
                 />
               </v-card-text>
             </v-card>

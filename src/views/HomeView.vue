@@ -51,13 +51,13 @@ const invalidRoutines = ref<string[]>([])
 
 async function deleteDevice() {
   if (!deviceStore.device) return
-   invalidRoutines.value = homeStore.routines
+  invalidRoutines.value = homeStore.routines
     .filter((r) => r.actions.map((a) => a.device.id).includes(deviceStore.device!.id))
     .map((r) => r.name)
 
   if (invalidRoutines.value.length) {
-      unsafeDeleteDialog.value = true
-      return;
+    unsafeDeleteDialog.value = true
+    return
   }
 
   try {
@@ -70,14 +70,16 @@ async function deleteDevice() {
   }
 
   await roomStore.invalidate()
-  if (roomStore.devices[0]){
+  if (roomStore.devices[0]) {
     await deviceStore.setCurrentDevice(roomStore.devices[0].id)
+  } else {
+    deviceStore.device = null
   }
 }
 
 const new_device_dialog = ref(false)
-const deleteDialog = ref(false);
-const unsafeDeleteDialog = ref(false);
+const deleteDialog = ref(false)
+const unsafeDeleteDialog = ref(false)
 
 function closeDialog() {
   setTimeout(() => {
@@ -93,14 +95,16 @@ function closeDialog() {
     <div class="list">
       <DevicesList />
     </div>
-    <div class="separator"></div>
+    <div :class="deviceStore.device ? 'separator' : ''"></div>
     <div class="controller">
       <div class="placeholder">
         <ControllerPlaceholder
+          v-if="deviceStore.device"
           @change_name="changeName"
           @change_room="changeRoom"
           @delete="deleteDialog = true"
         />
+        <p v-else>This room doesn't have any device! Try adding one to get started!</p>
       </div>
       <div class="fab">
         <v-btn
@@ -117,61 +121,66 @@ function closeDialog() {
     </div>
   </main>
   <div v-else class="roomless">
-    <p>This house doesn't have rooms... yet</p>
-    <p>Add the first one in the room picker!</p>
+    <img class="no_room" src="/no_room.png" alt="No room available"/>
+    <h2>This house doesn't have rooms... yet</h2>
+    <h2>Add the first one in the room picker!</h2>
   </div>
-  <v-dialog
-    theme="light"
-    max-width="30rem"
-    v-model="deleteDialog"
-    persistent
-  >
+
+  <v-dialog theme="light" max-width="30rem" v-model="deleteDialog" persistent>
     <v-card>
       <div class="cardDialogTitle">
-        <v-icon icon="mdi-alert" color="orange" size="large"/>
+        <v-icon icon="mdi-alert" color="orange" size="large" />
         <v-card-title>Confirm Delete</v-card-title>
       </div>
       <div class="dialog">
-        <v-card-text>Are you sure you want delete "{{deviceStore.device?.name}}" from "{{roomStore.room?.name}}"?</v-card-text>
+        <v-card-text
+          >Are you sure you want delete "{{ deviceStore.device?.name }}" from "{{
+            roomStore.room?.name
+          }}"?</v-card-text
+        >
       </div>
       <div class="dialogActions">
         <v-card-actions>
-          <v-btn  color="primary" @click="()=> deleteDialog = false">Cancel</v-btn>
-          <v-btn color="error" class="buttons" @click="()=> { deleteDevice() ; deleteDialog = false}">Delete</v-btn>
+          <v-btn color="primary" @click="() => (deleteDialog = false)">Cancel</v-btn>
+          <v-btn
+            color="error"
+            class="buttons"
+            @click="
+              () => {
+                deleteDevice()
+                deleteDialog = false
+              }
+            "
+            >Delete</v-btn
+          >
         </v-card-actions>
       </div>
     </v-card>
   </v-dialog>
-  <v-dialog
-    theme="light"
-    max-width="30rem"
-    v-model="unsafeDeleteDialog"
-    persistent
-  >
+  <v-dialog theme="light" max-width="30rem" v-model="unsafeDeleteDialog" persistent>
     <v-card>
       <div class="cardDialogTitle">
-        <v-icon icon="mdi-alert-octagon" color="error" size="large"/>
+        <v-icon icon="mdi-alert-octagon" color="error" size="large" />
         <v-card-title>Unable to Delete</v-card-title>
       </div>
       <div class="dialog">
         <p>
-          It seems like the device is being used by one or more routines.
-          Remove the actions related with the device from the routines in order to safely delete
-          "{{deviceStore.device?.name}}"
+          It seems like the device is being used by one or more routines. Remove the actions related
+          with the device from the routines in order to safely delete "{{
+            deviceStore.device?.name
+          }}"
         </p>
-        <br/>
+        <br />
         <p>
-          <strong>
-            Linked Routines:
-          </strong>
+          <strong> Linked Routines: </strong>
         </p>
         <ul class="invalidRoutinesList">
-          <li :key="routine" v-for="routine in invalidRoutines">{{routine}}</li>
+          <li :key="routine" v-for="routine in invalidRoutines">{{ routine }}</li>
         </ul>
       </div>
       <div class="dialogActions">
         <v-card-actions>
-          <v-btn  color="primary" @click="()=> unsafeDeleteDialog = false">Accept</v-btn>
+          <v-btn color="primary" @click="() => (unsafeDeleteDialog = false)">Accept</v-btn>
         </v-card-actions>
       </div>
     </v-card>
@@ -224,7 +233,7 @@ main {
   margin-left: 1.3rem;
   margin-bottom: 1rem;
 }
-.cardDialogTitle{
+.cardDialogTitle {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -240,7 +249,11 @@ main {
   justify-content: center;
 }
 
-.invalidRoutinesList{
+.invalidRoutinesList {
   margin-left: 1.5rem;
+}
+.no_room{
+  max-height: 60%;
+  max-width: 60%;
 }
 </style>

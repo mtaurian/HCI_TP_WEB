@@ -5,10 +5,38 @@ import { handleApiError,useHomeStore, useRoomStore, useDeviceStore, usePinStore 
 import { get_device_types, add_device_to_room } from '@/api'
 
 const deviceTypeSelect = ref('')
-const deviceTypes = (await get_device_types()).result.map((item) => ({
-  id: item.id,
-  name: item.name.toUpperCase()
-}))
+
+const deviceTypes = [
+// {id: 'c89b94e8581855bc', name: 'SPEAKER',icon:'mdi-speaker',product:'JBL-Flip 6'},
+
+{id: 'dbrlsh7o5sn8ur4i', name: 'FAUCET',icon:'mdi-faucet',product:'FERRUM-K150W'},
+
+{id: 'eu0v2xgprrhhg41g', name: 'BLINDS',icon:'mdi-blinds',product: 'ROLLET MARKET-BO'},
+
+{id: 'go46xmbqeomjrsjr', name: 'LAMP',icon:'mdi-lamp',product: 'PHILIPS HUE'},
+
+// {id: 'im77xxyulpegfmv8', name: 'OVEN',icon: 'mdi-stove',product:'WHIRLPOOL-GRILL-1000'},
+
+{id: 'li6cbv5sdlatti0j', name: 'AC',icon:'mdi-air-conditioner',product: 'SPLIT PHILCO-INVERTER'},
+
+// {id: 'lsf78ly0eqrjbz91', name: 'DOOR',icon: 'mdi-lock',product:'TEDEE GO-LOCK'},
+
+// {id: 'mxztsyjzsrq7iaqc', name: 'ALARM' ,icon:'mdi-shield-lock',product:'GADNIC DM200W'},
+
+{id: 'ofglvd9gqx8yfl3l', name: 'VACUUM',icon:'mdi-vacuum',product:'XIAOMI E10'},
+
+// {id: 'rnizejqr2di0okho', name: 'REFRIGERATOR',icon:'mdi-fridge-outline',product:'SAMSUMG RT32K5070'}
+]
+function setIcon() {
+  const icon=deviceTypes.find(device => device.id === deviceTypeSelect.value);
+  if(icon){
+    iconSelected.value=icon.icon
+  }else{
+    iconSelected.value='mdi-icon'
+  }
+}
+
+console.log(deviceTypes)
 const homeStore = useHomeStore()
 const devicesNames = (await get_devices()).result.map((item) => item.name)
 const pinStore=usePinStore()
@@ -177,18 +205,6 @@ const deviceNameRules = [
   (v: string) => !devicesNames.includes(v) || 'Another device with the same name already exists!'
 ]
 
-const homeCodeRules = [
-  (v: any) => !!v || 'Obligatory',
-  (v: any) => /^[0-9]*$/.test(v) || 'Must be a number',
-  (v: any) => (v && v.length == 4) || 'Must be 4 characters long',
-  (v: any) => isProtected===v || 'Incorrect PIN'
-]
-const ishomeCodeValid = computed(() => {
-  return (
-    homeCodeRules.every((rule) => rule(houseCode.value) === true)
-  )
-})
-const isValidStepCode = computed(() => ishomeCodeValid.value)
 const isDeviceNameValid = computed(() => {
   return deviceNameRules.every((rule) => rule(deviceName.value) === true)
 })
@@ -207,54 +223,13 @@ function buscarDispositivo() {
   }, 2500)
 }
 
-function setIcon() {
-  if (deviceTypeSelect.value == deviceTypes[0].id) {
-    iconSelected.value = 'mdi-speaker'
-  } else if (deviceTypeSelect.value == deviceTypes[1].id) {
-    iconSelected.value = 'mdi-faucet'
-  } else if (deviceTypeSelect.value == deviceTypes[2].id) {
-    iconSelected.value = 'mdi-blinds'
-  } else if (deviceTypeSelect.value == deviceTypes[3].id) {
-    iconSelected.value = 'mdi-lamp'
-  } else if (deviceTypeSelect.value == deviceTypes[4].id) {
-    iconSelected.value = 'mdi-stove'
-  } else if (deviceTypeSelect.value == deviceTypes[5].id) {
-    iconSelected.value = 'mdi-air-conditioner'
-  } else if (deviceTypeSelect.value == deviceTypes[6].id) {
-    iconSelected.value = 'mdi-lock'
-  } else if (deviceTypeSelect.value == deviceTypes[7].id) {
-    iconSelected.value = 'mdi-shield-lock'
-  } else if (deviceTypeSelect.value == deviceTypes[8].id) {
-    iconSelected.value = 'mdi-vacuum'
-  } else if (deviceTypeSelect.value == deviceTypes[9].id) {
-    iconSelected.value = 'mdi-fridge-outline'
-  } else {
-    iconSelected.value = 'mdi-icon'
-  }
-}
+
 
 function getNameDevicePaired(): string {
-  if (deviceTypeSelect.value == deviceTypes[0].id) {
-    return 'JBL-Flip 6'
-  } else if (deviceTypeSelect.value == deviceTypes[1].id) {
-    return 'FERRUM-K150W'
-  } else if (deviceTypeSelect.value == deviceTypes[2].id) {
-    return 'ROLLET MARKET-BO'
-  } else if (deviceTypeSelect.value == deviceTypes[3].id) {
-    return 'PHILIPS HUE'
-  } else if (deviceTypeSelect.value == deviceTypes[4].id) {
-    return 'WHIRLPOOL-GRILL-1000'
-  } else if (deviceTypeSelect.value == deviceTypes[5].id) {
-    return 'SPLIT PHILCO-INVERTER'
-  } else if (deviceTypeSelect.value == deviceTypes[6].id) {
-    return 'TEDEE GO-LOCK'
-  } else if (deviceTypeSelect.value == deviceTypes[7].id) {
-    return 'GADNIC DM200W'
-  } else if (deviceTypeSelect.value == deviceTypes[8].id) {
-    return 'XIAOMI E10'
-  } else if (deviceTypeSelect.value == deviceTypes[9].id) {
-    return 'SAMSUMG RT32K5070'
-  } else {
+  const device=deviceTypes.find(device => device.id === deviceTypeSelect.value);
+  if(device){
+    return device.product
+  }else{
     return ''
   }
 }
@@ -272,6 +247,19 @@ watch(dialog, (value) => {
     emit('turnoff')
   }
 })
+const valid = ref(true)
+function validate(n: string) {
+  valid.value = pinStore.validate(n)
+  if (valid.value) {
+    currentStep.value++
+  }
+}
+function on_change(n: string) {
+  if (n.length !== 4) {
+    // Oh, the irony
+    valid.value = true
+  }
+}
 </script>
 
 <template>
@@ -286,19 +274,16 @@ watch(dialog, (value) => {
         >
           <v-card title="Enter your home security PIN" flat>
             <v-card-text>
-              <v-text-field
-                v-model="houseCode"
-                label="PIN"
-                :rules="homeCodeRules"
-                clearable
-                placeholder="1234"
-                suffix="Must be 4 characters long"
+              <v-otp-input
+                :length="4"
+                :error="!valid"
+                variant="outlined"
+                @finish="validate"
+                @update:model-value="on_change"
               />
             </v-card-text>
           </v-card>
-          <template v-slot:next>
-            <v-btn :disabled="!isValidStepCode" @click="currentStep += 1" />
-          </template>
+          <template v-slot:next></template>
           <template v-slot:prev></template>
         </v-stepper-vertical-item>
         <v-stepper-vertical-item :title="`Device type`"
