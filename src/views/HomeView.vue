@@ -29,12 +29,6 @@ async function changeName(name: string) {
 async function changeRoom(room: string) {
   if (!deviceStore.device) return
 
-  const confirmation = confirm(
-    `¿Estás seguro de que deseas mover el dispositivo ${deviceStore.device.name}?`
-  )
-
-  if (!confirmation) return
-
   try {
     if (!(await change_device_room(deviceStore.device.id, room)).result) {
       alert('No se pudo cambiar el dispositivo de habitación')
@@ -44,7 +38,12 @@ async function changeRoom(room: string) {
     alert('No se pudo cambiar el dispositivo de habitación')
   }
 
-  roomStore.invalidate()
+  await roomStore.invalidate()
+  if (roomStore.devices[0]) {
+    await deviceStore.setCurrentDevice(roomStore.devices[0].id)
+  } else {
+    deviceStore.device = null
+  }
 }
 
 const invalidRoutines = ref<string[]>([])
@@ -86,6 +85,8 @@ function closeDialog() {
     new_device_dialog.value = false
   }, 500)
 }
+
+const confirmPrompt = ref(false as false | string)
 </script>
 
 <template>
@@ -101,7 +102,7 @@ function closeDialog() {
         <ControllerPlaceholder
           v-if="deviceStore.device"
           @change_name="changeName"
-          @change_room="changeRoom"
+          @change_room="(room) => (confirmPrompt = room)"
           @delete="deleteDialog = true"
         />
         <p v-else>This room doesn't have any device! Try adding one to get started!</p>
@@ -121,11 +122,43 @@ function closeDialog() {
     </div>
   </main>
   <div v-else class="roomless">
-    <img class="no_room" src="/no_room.png" alt="No room available"/>
+    <img class="no_room" src="/no_room.png" alt="No room available" />
     <h2>This house doesn't have rooms... yet</h2>
     <h2>Add the first one in the room picker!</h2>
   </div>
 
+  <v-dialog theme="light" max-width="30rem" v-model="confirmPrompt" persistent>
+    <v-card>
+      <div class="cardDialogTitle">
+        <v-icon icon="mdi-alert" color="orange" size="large" />
+        <v-card-title>Confirm Room Change</v-card-title>
+      </div>
+      <div class="dialog">
+        <v-card-text>
+          Are you sure you want to move the device "{{ deviceStore.device?.name }}" to the room "{{
+            homeStore.rooms.find((e) => e.id === confirmPrompt)?.name
+          }}"?
+        </v-card-text>
+      </div>
+      <div class="dialogActions">
+        <v-card-actions>
+          <v-btn color="primary" @click="() => (confirmPrompt = false)">Cancel</v-btn>
+          <v-btn
+            color="error"
+            class="buttons"
+            @click="
+              () => {
+                changeRoom(confirmPrompt as string)
+                confirmPrompt = false
+              }
+            "
+          >
+            Move device
+          </v-btn>
+        </v-card-actions>
+      </div>
+    </v-card>
+  </v-dialog>
   <v-dialog theme="light" max-width="30rem" v-model="deleteDialog" persistent>
     <v-card>
       <div class="cardDialogTitle">
@@ -252,7 +285,7 @@ main {
 .invalidRoutinesList {
   margin-left: 1.5rem;
 }
-.no_room{
+.no_room {
   max-height: 60%;
   max-width: 60%;
 }
