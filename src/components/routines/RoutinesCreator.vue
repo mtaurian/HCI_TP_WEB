@@ -242,7 +242,7 @@ const handleChangeName = async (newName : string) =>{
             </div>
 
           </div>
-          <div class="button" v-if="hasChanges">
+          <div class="button">
             <v-btn class="cancel" width="9rem" color="primary" @click="() =>{ homeStore.invalidate() ; routineStore.invalidate() ; hasChanges = false}">
               Cancel
             </v-btn>
