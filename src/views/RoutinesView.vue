@@ -1,5 +1,5 @@
 <template>
-  <main class="main" v-if="homeStore.devices.length">
+  <main :class="routineStore.routine? 'main':'routinless'" v-if="homeStore.devices.length">
     <!-- <h1>House code: {{ $route.params.home }}<br />Room code: {{ $route.params.room }}</h1> -->
     <div class="list">
       <RoutinesList />
@@ -9,7 +9,10 @@
     <div class="controller">
       <div class="placeHolder">
         <RoutinesCreator @delete="() => (deleteDialog = true)" v-if="routineStore.routine" />
-        <p v-else>No routines available! Try adding one to get started!</p>
+        <div v-else class="routinless">
+          <img class="no_routine" src="/no_routine.png" alt="No routine"/>
+          <h2>No routines available! Try adding one to get started!</h2>
+        </div>
       </div>
       <div class="fab">
         <v-btn
@@ -81,11 +84,20 @@ main {
   align-items: center;
   height: 100%;
 }
-
+.no_routine{
+  max-height: 42%;
+  max-width: 42%;
+}
 .separator {
   background-color: #4a4458;
   margin: 1rem 0;
   opacity: 0.5;
+}
+.routinless{
+  display: flex;
+  justify-content: left;
+  flex-direction: column;
+  align-items: center;
 }
 
 .controller {

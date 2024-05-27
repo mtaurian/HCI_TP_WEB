@@ -170,7 +170,8 @@ function on_pin_change(n: string) {
             v-model="change_room_value"
             @update:model-value="$emit('change_room', $event!), (change_room_value = undefined)"
             variant="underlined"
-          ></v-select>
+          >
+          </v-select>
         </div>
         <div class="button">
           <v-btn @click="$emit('delete')" color="primary">

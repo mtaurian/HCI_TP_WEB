@@ -91,7 +91,7 @@ function closeDialog() {
 <template>
   <AddDevice v-if="new_device_dialog" @turnoff="closeDialog" />
 
-  <main v-if="roomStore.room">
+  <main v-if="roomStore.room" :class="!deviceStore.device? 'roomless':''">
     <div class="list">
       <DevicesList />
     </div>
@@ -104,7 +104,10 @@ function closeDialog() {
           @change_room="changeRoom"
           @delete="deleteDialog = true"
         />
-        <p v-else>This room doesn't have any device! Try adding one to get started!</p>
+        <div v-else class="roomless">
+          <img class="no_device" src="/no_room.png"/>
+          <p>This room doesn't have any device! Try adding one to get started!</p>
+        </div>
       </div>
       <div class="fab">
         <v-btn
@@ -255,5 +258,9 @@ main {
 .no_room{
   max-height: 60%;
   max-width: 60%;
+}
+.no_device{
+  max-height: 80%;
+  max-width: 80%;
 }
 </style>

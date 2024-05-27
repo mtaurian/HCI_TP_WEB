@@ -254,10 +254,10 @@ function on_change(n: string) {
           </template>
         </v-stepper-vertical-item>
         <v-stepper-vertical-item
-          :title="`Paso ${isProtected ? '3' : '2'}`"
+          title="Select an icon for your room"
           :icon="isProtected ? 'mdi-numeric-3' : 'mdi-numeric-2'"
         >
-          <v-card title="Select an icon for your device" subtitle="Optional" flat>
+          <v-card title="Select an icon for your room" subtitle="Optional" flat>
             <v-card>
               <v-menu>
                 <template v-slot:activator="{ props }">
